@@ -1,0 +1,37 @@
+Name chromsout
+	local MyFilenameOne$, MyFilenameTwo$, DateStamp$, TimeStamp$, DtTmStmp$
+	
+																		!there is, I am sure, a better way to do this
+	DataName$  = ObjHdrText$ (CHROMREG[1], SampleName)
+	TimeStamp$ = SubString$(ObjHdrText$ (CHROMREG[1], DateTime), 2, 0, " ")
+	TimeStamp$ = SubString$(TimeStamp$, 1, 0, ":") + SubString$(TimeStamp$, 2, 0, ":") + SubString$(TimeStamp$, 3, 0, ":")
+	DateStamp$ = SubString$(ObjHdrText$ (CHROMREG[1], DateTime), 1, 0, ",")
+	DateStamp$ = SubString$(DateStamp$, 1, 0, "-") + SubString$(DateStamp$, 2, 0, "-") + SubString$(DateStamp$, 3, 0, "-")
+	DtTmStmp$ = DateStamp$ + TimeStamp$
+	MyFilenameOne$ = DataName$ + "_" + DtTmStmp$ + "214.txt"						!the result here is a unique filename
+	MyFilenameTwo$ = DataName$ + "_" + DtTmStmp$ + "280.txt"						!the result here is a unique filename
+	MyFilepathOne$ = "C:\Chem32\LabKey\" + MyFilenameOne$
+	MyFilepathTwo$ = "C:\Chem32\LabKey\" + MyFilenameTwo$
+
+	!data spacing
+	MySpacing = Data(CHROMREG[1], 0, 2) - Data(CHROMREG[1], 0, 1)
+	MyStartval = ObjHdrVal(CHROMREG, Start)
+	MyEndval = ObjHdrVal(CHROMREG, End)
+	MyReglength = (MyEndval - MyStartval) / MySpacing
+	
+	!create the file
+	Open MyFilepathOne$ FOR APPEND AS #7
+	Open MyFilepathTwo$ FOR APPEND AS #8
+	
+	For i=1 to MyReglength
+   		Print #7, Data (CHROMREG[1],0,i), ",", Data (CHROMREG[1],1,i)
+		Print #8, Data (CHROMREG[2],0,i), ",", Data (CHROMREG[2],1,i)
+	Next i
+
+	Print #7, "EOT"
+	Print #8, "EOT"
+
+	Close #7
+	Close #8
+	
+EndMacro
