@@ -1,0 +1,4 @@
+<ap:provider xmlns:ap="http://labkey.org/study/assay/xml">
+    <ap:name>Provisional HPLC</ap:name>
+    <ap:description>Raw data for High performance liquid chromatography assay.</ap:description>
+</ap:provider>

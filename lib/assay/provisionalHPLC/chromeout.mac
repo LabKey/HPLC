@@ -1,0 +1,32 @@
+Name chromout
+	local MyFilename$, DateStamp$, TimeStamp$, DtTmStmp$
+
+																		!there is, I am sure, a better way to do this
+	DataName$  = ObjHdrText$ (CHROMREG[1], SampleName)
+	TimeStamp$ = SubString$(ObjHdrText$ (CHROMREG[1], DateTime), 2, 0, " ")
+	TimeStamp$ = SubString$(TimeStamp$, 1, 0, ":") + SubString$(TimeStamp$, 2, 0, ":") + SubString$(TimeStamp$, 3, 0, ":")
+	DateStamp$ = SubString$(ObjHdrText$ (CHROMREG[1], DateTime), 1, 0, ",")
+	DateStamp$ = SubString$(DateStamp$, 1, 0, "-") + SubString$(DateStamp$, 2, 0, "-") + SubString$(DateStamp$, 3, 0, "-")
+	DtTmStmp$ = DateStamp$ + TimeStamp$
+	MyFilename$ = DataName$ + "_" + DtTmStmp$ + ".txt"						!the result here is a unique filename
+	MyFilepath$ = "C:\Chem32\LabKey\" + MyFilename$
+
+	!data spacing
+	MySpacing = Data(CHROMREG[1], 0, 2) - Data(CHROMREG[1], 0, 1)
+	MyStartval = ObjHdrVal(CHROMREG, Start)
+	MyEndval = ObjHdrVal(CHROMREG, End)
+	MyReglength = (MyEndval - MyStartval) / MySpacing
+
+	!create the file
+	Open MyFilepath$ FOR APPEND AS #7
+
+	For i=1 to MyReglength
+   		Print #7, Data (CHROMREG[1],0,i), ",", Data (CHROMREG[1],1,i)
+	Next i
+
+	Print #7, "EOT"
+
+	Close #7
+
+
+EndMacro
