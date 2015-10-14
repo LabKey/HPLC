@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project default="usage">
+
+    <target name="distribution">
+        <antcall target="gather_modules" />
+        <ant antfile="${basedir}/build.xml" target="package_redistributables">
+            <property name="dist_sub.dir" value="HPLC" />
+            <property name="skip.windowsInstaller" value="true" />
+            <property name="skip.zipDistribution" value="true" />
+            <property name="extraFileIdentifier" value="-HPLC" />
+        </ant>
+    </target>
+
+    <target name="gather_modules">
+        <ant antfile="${basedir}/distributions/legacy.xml" target="gather_modules" />
+        <copy todir="${dist.modules.dir}">
+            <filelist dir="${staging.modules.dir}">
+                <file name="HPLC.module" />
+            </filelist>
+        </copy>
+    </target>
+
+    <target name="usage">
+        <echo>Not intended to be run directly</echo>
+        <echo>Run `ant dist -Dname=distname` from the project root to prepare a particular distribution</echo>
+    </target>
+
+</project>
