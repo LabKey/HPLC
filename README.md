@@ -14,7 +14,7 @@
   2. Check `HPLC` Module   (Leave existing checked items)
   3. click `Update Folder` button to save changes
 4. Create Assay Design 
-  1.  Select Provisional HPLC
+  1.  Select Raw HPLC as Assay definition
   2.  click `Next`
   3.  Name is only required field (Defaults should be fine)
   4.  `Save & Close`
@@ -42,6 +42,7 @@ Should see:
 `Configuration complete. Listening in <Your drop folder>`
 
 You should be ready to go. Any files dropped within the watched folder should be loaded to the target LabKey instance.
+If you do have an issue, check watch.log within the same folder for additional information.
 
 ##To View:##
 
