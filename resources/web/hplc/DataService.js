@@ -130,7 +130,7 @@ Ext4.define('LABKEY.hplc.DataService', {
     },
 
     /**
-     * Use this to retrieve all the required information with regards to the given provisional HPLC assay runId
+     * Use this to retrieve all the required information with regards to the given Raw HPLC assay runId
      * @param runId
      * @param schemaName,
      * @param callback

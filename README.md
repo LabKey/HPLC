@@ -20,7 +20,7 @@
   4.  `Save & Close`
 5. Add `Files` webpart
 6. Within the Files webpart create folder named **HPLCAssayData**
-7. Modify ./lib/assay/provisionalHPLC/HPLCWatcher.py with your labkey server parameters
+7. Modify ./lib/assay/rawHPLC/HPLCWatcher.py with your labkey server parameters
   ```
   server       = ''  # required, leave off any http(s):// and include any ports (e.g. :8000)
   target_dir   = ''  # required, Project/subfolder name
