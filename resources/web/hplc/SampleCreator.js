@@ -113,15 +113,11 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                     dock: 'top',
                     items: [{
                         id: 'startqcbtn',
-                        text: 'Start QC',
+                        text: 'Overlay Selected',
                         disabled: true,
                         handler: function(b) {
                             this.fireEvent('startqc', this.getSelectedInputResults());
                         },
-                        scope: this
-                    },{
-                        text: 'Define Standards',
-                        handler: function() { this.fireEvent('requeststandards'); },
                         scope: this
                     }]
                 }],
@@ -157,32 +153,6 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                             labelWidth: 150
                         },
                         items: [{
-                            xtype: 'datefield',
-                            id: 'rundate',
-                            fieldLabel: 'Run Time',
-                            name: 'rundate',
-                            width: 400
-                        },{
-                            id: 'avgconcfield',
-                            xtype: 'numberfield',
-                            editable: false,
-                            hideTrigger: true,
-                            allowBlank: false,
-                            validateOnBlur: false,
-                            emptyText: 'autofilled',
-                            name: 'avgconc',
-                            fieldLabel: 'Average Concentration'
-                        },{
-                            id: 'stddevfield',
-                            xtype: 'numberfield',
-                            editable: false,
-                            hideTrigger: true,
-                            allowBlank: false,
-                            validateOnBlur: false,
-                            emptyText: 'autofilled',
-                            name: 'stddev',
-                            fieldLabel: 'Standard Deviation'
-                        },{
                             xtype: 'fieldcontainer',
                             fieldLabel: 'Time (m)',
                             layout: 'hbox',
@@ -264,17 +234,6 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                 // clear the form fields
                 //
                 this.getQCForm().getForm().reset();
-                Ext4.getCmp('submitactionbtn').setDisabled(true);
-
-                if (runs.length > 0) {
-                    //
-                    // compute a valid date from the file path
-                    //
-                    var date = HPLCService.getDate(runs[0].get('filePath'));
-                    if (date) {
-                        Ext4.getCmp('rundate').setValue(date);
-                    }
-                }
             }, this);
         }
         return this.northpanel;
@@ -321,12 +280,6 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                             this.updateZoom(0, 30, 0, 1200);
                         },
                         scope: this
-                    },'->',{
-                        id: 'submitactionbtn',
-                        text: 'Submit Analysis',
-                        disabled: true,
-                        handler: this.saveQC,
-                        scope: this
                     }]
                 }],
                 items: [{
@@ -359,7 +312,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                     if (recieved == expected) {
                         this.allContent = allContent;
                         this.contentMap = contentMap;
-                        this.renderPlot(allContent);
+                        this.renderPlot(allContent, true);
                     }
                 };
 
@@ -550,7 +503,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
             });
 
             this.eastpanel = Ext4.create('Ext.panel.Panel', {
-                title: 'QC Results',
+                title: 'Basic integration',
                 region: 'east',
                 autoScroll: true,
                 width: 400,
@@ -770,7 +723,12 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
         return this._getNode(view, model, selector).getValue();
     },
 
-    renderPlot : function(contents) {
+    renderPlot : function(contents, isStartQC) {
+        if (isStartQC) {
+            var mvHight = HPLCService.getMaxHeight(contents);
+            var mvHighCmp = Ext4.getCmp('mvrangehigh');
+            mvHighCmp.setValue(mvHight);
+        }
 
         var spectrumPlot = Ext4.getCmp('plotarea');
         spectrumPlot.leftRight = [Ext4.getCmp('aucleft').getValue(), Ext4.getCmp('aucright').getValue()];

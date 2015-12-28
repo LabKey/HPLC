@@ -64,7 +64,7 @@ Ext4.define('LABKEY.hplc.QualityControl', {
         LABKEY.DataRegion.getSelected({
             selectionKey: LABKEY.ActionURL.getParameter('selectionKey'),
             success: function(runSelection) {
-                HPLCService.getRun(LABKEY.ActionURL.getParameter('schemaName'), runSelection.selected[0], callback, scope);
+                HPLCService.getRun(LABKEY.ActionURL.getParameter('schemaName'), runSelection.selected, callback, scope);
             },
             scope: this
         });

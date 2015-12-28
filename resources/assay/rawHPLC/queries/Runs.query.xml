@@ -22,7 +22,7 @@
             <table tableName="Runs" tableDbType="TABLE">
                 <buttonBarOptions position="both" includeStandardButtons="true">
                     <includeScript>/hplc/hplc.js</includeScript>
-                    <item insertPosition="end" text="QC Selected Run" requiresSelection="true">
+                    <item insertPosition="end" text="View Selected Runs" requiresSelection="true">
                         <onClick>LABKEY.hplc.hplcSelection(dataRegion, dataRegionName)</onClick>
                     </item>
                 </buttonBarOptions>
