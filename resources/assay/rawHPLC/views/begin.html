@@ -1,64 +1,29 @@
 <div>
-    <input type="text" name="runs-search" placeholder="Search Runs..." style="margin-bottom: 20px;"/>
+    <input type="text" name="runs-search" placeholder="Search Runs" style="margin-bottom: 20px;"/>
     <div id="runsResult"></div>
 </div>
 <script type="text/javascript">
-    (function($) {
-
-        var now = Date.now || function() {
-                    return new Date().getTime();
-                };
-
-        function debounce(func, wait, immediate) {
-            var timeout, args, context, timestamp, result;
-
-            var later = function() {
-                var last = now() - timestamp;
-
-                if (last < wait && last >= 0) {
-                    timeout = setTimeout(later, wait - last);
-                } else {
-                    timeout = null;
-                    if (!immediate) {
-                        result = func.apply(context, args);
-                        if (!timeout) context = args = null;
-                    }
-                }
-            };
-
-            return function() {
-                context = this;
-                args = arguments;
-                timestamp = now();
-                var callNow = immediate && !timeout;
-                if (!timeout) timeout = setTimeout(later, wait);
-                if (callNow) {
-                    result = func.apply(context, args);
-                    context = args = null;
-                }
-
-                return result;
-            };
-        }
+    (function() {
 
         function init() {
 
             // Initialize the display grid
             var qwp = new LABKEY.QueryWebPart({
                 renderTo: 'runsResult',
-                schemaName: 'assay.rawHPLC.Raw',
-                queryName: 'Runs',
+                schemaName: LABKEY.page.assay.protocolSchemaName,
+                queryName: 'Data',
                 frame: 'none'
             });
 
             // Bind search
-            $('input[name="runs-search"]').keyup(debounce(function() {
-                var filter = LABKEY.Filter.create('WRAPPEDROWID/Search', $(this).val(), LABKEY.Filter.Types.CONTAINS);
-                qwp.addFilter(filter);
-            }, 250));
+            Ext.get(Ext.DomQuery.select('input[name="runs-search"]')[0]).on('keyup', function(evt, el) {
+                var filter = LABKEY.Filter.create('WRAPPEDROWID/Search', Ext.get(el).getValue(), LABKEY.Filter.Types.CONTAINS);
+                qwp.getDataRegion().addFilter(filter);
+            }, undefined /* scope */, {
+                buffer: 250
+            });
         }
 
-        $(init);
-
-    })(jQuery);
+        Ext.onReady(init);
+    })();
 </script>
