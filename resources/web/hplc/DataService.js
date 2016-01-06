@@ -166,10 +166,11 @@ Ext4.define('LABKEY.hplc.DataService', {
      * @param callback
      * @param scope
      */
-    getRun : function(schema, runIds, callback, scope) {
+    getRun : function(schema, runIds, callback, scope, dataNames) {
 
         var context = {
-            RunIds: runIds
+            RunIds: runIds,
+            DataNames: dataNames
         }, _count = 0;
 
         var loader = function() {
@@ -215,6 +216,17 @@ Ext4.define('LABKEY.hplc.DataService', {
 
                                 for (var r = 0; r < run.dataRows.length; r++)
                                 {
+                                    var isValidData = false;
+                                    for (var ind = 0; ind < context.DataNames.length; ind++){
+                                        if (context.DataNames[ind] == run.dataRows[r]['Name']) {
+                                            isValidData = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!isValidData) {
+                                        continue;
+                                    }
+
                                     var name = run.dataRows[r]['Name'].split('.');
                                     var fileExt = name[1];
                                     name = name[0];

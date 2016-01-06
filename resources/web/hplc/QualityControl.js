@@ -64,7 +64,24 @@ Ext4.define('LABKEY.hplc.QualityControl', {
         LABKEY.DataRegion.getSelected({
             selectionKey: LABKEY.ActionURL.getParameter('selectionKey'),
             success: function(runSelection) {
-                HPLCService.getRun(LABKEY.ActionURL.getParameter('schemaName'), runSelection.selected, callback, scope);
+                LABKEY.Query.selectRows({
+                    schemaName: LABKEY.ActionURL.getParameter('schemaName'),
+                    queryName: 'Data',
+                    requiredVersion: 13.2,
+                    filterArray: [ LABKEY.Filter.create('RowId', runSelection.selected.join(';'), LABKEY.Filter.Types.IN) ],
+                    success: function(result) {
+                        var runs = [];
+                        var dataNames = [];
+                        if (result.rows.length > 0) {
+                            for (var r = 0; r < result.rows.length; r++) {
+                                runs.push(result.rows[r]['Run/Links'].value);
+                                dataNames.push(result.rows[r]['Name'].value);
+                            }
+                        }
+                        HPLCService.getRun(LABKEY.ActionURL.getParameter('schemaName'), runs, callback, scope, dataNames);
+                    },
+                    scope: this
+                });
             },
             scope: this
         });
