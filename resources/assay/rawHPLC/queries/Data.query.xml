@@ -20,17 +20,6 @@
     <metadata>
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="Data" tableDbType="TABLE">
-                <columns>
-                    <column columnName="WrappedRowId" wrappedColumnName="RowId">
-                        <measure>false</measure>
-                        <dimension>true</dimension>
-                        <fk>
-                            <fkDbSchema>assay.rawHPLC.RawHPLC</fkDbSchema>
-                            <fkTable>SearchHPLCData</fkTable>
-                            <fkColumnName>RowId</fkColumnName>
-                        </fk>
-                    </column>
-                </columns>
                 <buttonBarOptions position="both" includeStandardButtons="true">
                     <includeScript>/hplc/hplc.js</includeScript>
                     <item insertPosition="end" text="View Selected Runs" requiresSelection="true">

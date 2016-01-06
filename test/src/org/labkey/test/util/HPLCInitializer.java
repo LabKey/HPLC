@@ -17,6 +17,20 @@ public class HPLCInitializer
     public static final String RAW_HPLC_DESC = "HPLC Raw Assay Data";
 
     public static final String RAW_HPLC_PIPELINE_PATH = TestFileUtils.getSampleData("rawHPLC").getPath();
+    public static final String RAW_HPLC_ASSAY_METADATA =
+            "<tables xmlns=\"http://labkey.org/data/xml\">\n" +
+            "   <table tableName=\"Data\" tableDbType=\"NOT_IN_DB\">\n" +
+            "       <columns>\n" +
+            "           <column columnName=\"WrappedRowId\" wrappedColumnName=\"RowId\">\n" +
+            "               <fk>\n" +
+            "                   <fkDbSchema>assay.rawHPLC.RawHPLC</fkDbSchema>\n" +
+            "                   <fkTable>SearchHPLCData</fkTable>\n" +
+            "                   <fkColumnName>RowId</fkColumnName>\n" +
+            "               </fk>\n" +
+            "           </column>\n" +
+            "       </columns>\n" +
+            "   </table>\n" +
+            "</tables>";
 
     public HPLCInitializer(BaseWebDriverTest test, String projectName)
     {
@@ -31,6 +45,7 @@ public class HPLCInitializer
         _test._containerHelper.enableModule(_project, "HPLC");
 
         defineRawHPLCAssay();
+        overrideRawHPLCMetadata();
         uploadRawHPLCData();
 
         _test.goToProjectHome();
@@ -63,6 +78,20 @@ public class HPLCInitializer
         _test.clickButton("Save & Close");
 
         _test.setPipelineRoot(RAW_HPLC_PIPELINE_PATH);
+    }
+
+    @LogMethod
+    private void overrideRawHPLCMetadata()
+    {
+        _test.beginAt("/" + _project + "/query-schema.view?schemaName=assay.rawHPLC.RawHPLC&queryName=Data");
+        _test.waitForText(10000, "edit metadata");
+        _test.clickAndWait(Locator.linkWithText("edit metadata"));
+        _test.waitForText(10000, "Label");
+        _test.clickButton("Edit Source", _test.WAIT_FOR_PAGE);
+        _test._extHelper.clickExtTab("XML Metadata");
+        _test.setCodeEditorValue("metadataText", RAW_HPLC_ASSAY_METADATA);
+        _test.clickButton("Save", 0);
+        _test.waitForElement(Locator.id("status").withText("Saved"), _test.WAIT_FOR_JAVASCRIPT);
     }
 
     @LogMethod
