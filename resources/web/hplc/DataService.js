@@ -161,12 +161,13 @@ Ext4.define('LABKEY.hplc.DataService', {
 
     /**
      * Use this to retrieve all the required information with regards to the given Raw HPLC assay runIds
+     * @param schema
      * @param runIds
-     * @param schemaName,
+     * @param dataNames
      * @param callback
      * @param scope
      */
-    getRun : function(schema, runIds, callback, scope, dataNames) {
+    getRun : function(schema, runIds, dataNames, callback, scope) {
 
         var context = {
             RunIds: runIds,

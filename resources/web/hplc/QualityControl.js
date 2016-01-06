@@ -63,22 +63,43 @@ Ext4.define('LABKEY.hplc.QualityControl', {
     getRunContext : function(callback, scope) {
         LABKEY.DataRegion.getSelected({
             selectionKey: LABKEY.ActionURL.getParameter('selectionKey'),
-            success: function(runSelection) {
+            success: function(resultSelection) {
                 LABKEY.Query.selectRows({
                     schemaName: LABKEY.ActionURL.getParameter('schemaName'),
                     queryName: 'Data',
                     requiredVersion: 13.2,
-                    filterArray: [ LABKEY.Filter.create('RowId', runSelection.selected.join(';'), LABKEY.Filter.Types.IN) ],
+                    filterArray: [ LABKEY.Filter.create('RowId', resultSelection.selected.join(';'), LABKEY.Filter.Types.IN) ],
                     success: function(result) {
-                        var runs = [];
+                        var runNames = [];
                         var dataNames = [];
                         if (result.rows.length > 0) {
-                            for (var r = 0; r < result.rows.length; r++) {
-                                runs.push(result.rows[r]['Run/Links'].value);
-                                dataNames.push(result.rows[r]['Name'].value);
-                            }
+
+                            Ext4.each(result.rows, function(row) {
+                                runNames.push(row['Run/RunIdentifier'].value);
+                                dataNames.push(row['Name'].value);
+                            });
+
+                            LABKEY.Query.selectRows({
+                                schemaName: LABKEY.ActionURL.getParameter('schemaName'),
+                                queryName: 'Runs',
+                                requiredVersion: 13.2,
+                                columns: 'RowId',
+                                filterArray: [
+                                    LABKEY.Filter.create('RunIdentifier', runNames.join(';'), LABKEY.Filter.Types.IN)
+                                ],
+                                success: function(runs) {
+
+                                    var runIds = [];
+
+                                    Ext.each(runs.rows, function(row) {
+                                        runIds.push(row['RowId'].value);
+                                    });
+
+                                    HPLCService.getRun(LABKEY.ActionURL.getParameter('schemaName'), runIds, dataNames, callback, scope);
+                                },
+                                scope: this
+                            });
                         }
-                        HPLCService.getRun(LABKEY.ActionURL.getParameter('schemaName'), runs, callback, scope, dataNames);
                     },
                     scope: this
                 });
