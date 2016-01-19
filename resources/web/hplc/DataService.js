@@ -130,74 +130,132 @@ Ext4.define('LABKEY.hplc.DataService', {
     },
 
     /**
-     * Use this to retrieve all the required information with regards to the given Raw HPLC assay runId
-     * @param runId
-     * @param schemaName,
+     * Get the max y value * 110%
+     * @param datacontents
+     * @returns {Number} max y value * 110% rounded to the nearest 10
+     */
+    getMaxHeight : function(datacontents) {
+        var maxY = 0;
+        for (var i = 0; i < datacontents.length; i++)
+        {
+            var datacontent = datacontents[i];
+            if (datacontent)
+            {
+                var _data = datacontent.sheets[0].data;
+                _data.shift(); // get rid of column headers
+                var d, xy, y;
+
+                for (d = 0; d < _data.length; d++)
+                {
+                    xy = _data[d][0].split(' ');
+                    y = parseFloat(xy[1]);
+                    if (y > maxY)
+                    {
+                        maxY = y;
+                    }
+                }
+            }
+        }
+        return maxY > 0 ? Math.ceil(maxY * 1.1/10)*10 : 1200;
+    },
+
+    /**
+     * Use this to retrieve all the required information with regards to the given Raw HPLC assay runIds
+     * @param schema
+     * @param runIds
+     * @param dataNames
      * @param callback
      * @param scope
      */
-    getRun : function(schema, runId, callback, scope) {
+    getRun : function(schema, runIds, dataNames, callback, scope) {
 
         var context = {
-            RunId: runId
+            RunIds: runIds,
+            DataNames: dataNames
         }, _count = 0;
 
         var loader = function() {
             _count++;
             if (_count == 4) {
 
-                //
-                // Load the expected batch/run
-                //
-                LABKEY.Experiment.loadBatch({
+                var batchIds = [];
+                for (var i = 0; i < context.RunDefinitions.length; i++) {
+                    batchIds.push(context.RunDefinitions[i].Batch.value);
+                }
+
+                LABKEY.Experiment.loadBatches({
                     assayId: context.AssayDefinition.id,
-                    batchId: context.RunDefinition.Batch.value,
-                    success: function(RunGroup) {
-                        context.batch = RunGroup;
+                    batchIds: batchIds,
+                    success: function(RunGroups) {
+                        //context.batch = RunGroup;
 
                         //
                         // Transform select rows result into a structure the Ext store can accept
                         //
                         var d = [];
-                        var runs = RunGroup.runs, runIdentifier, run;
-
-                        //
-                        // Find the associated run
-                        //
-                        for (var r=0; r < runs.length; r++) {
-                            if (runs[r].id == context.RunId) {
-                                runIdentifier = runs[r].name;
-                                run = runs[r];
-                                break;
-                            }
-                        }
-
-                        for (r=0; r < run.dataRows.length; r++) {
-                            var name = run.dataRows[r]['Name'].split('.');
-                            var fileExt = name[1];
-                            name = name[0];
-                            var filePath = "";
-                            var dataFile = run.dataRows[r]['DataFile'];
-                            filePath = context.pipe + "/" + runIdentifier + "/" + dataFile;
+                        for (var j = 0; j < RunGroups.length; j++) {
+                            var RunGroup = RunGroups[j];
+                            var runs = RunGroup.runs;
+                            var filteredRuns = [];
 
                             //
-                            // Link the associated LABKEY.Exp.Data object (the data file)
+                            // Find the associated runs
                             //
-                            var ExpDataRun;
-                            for (var i=0; i < run.dataInputs.length; i++) {
-                                if (run.dataInputs[i].name == dataFile) {
-                                    ExpDataRun = run.dataInputs[i];
+                            for (var r=0; r < runs.length; r++) {
+                                for (var ind = 0; ind < context.RunIds.length; ind++){
+                                    if (context.RunIds[ind] == runs[r].id) {
+                                        filteredRuns.push(runs[r]);
+                                        break;
+                                    }
                                 }
                             }
 
-                            d.push({
-                                name: name,
-                                fileExt: fileExt,
-                                filePath: filePath,
-                                expDataRun: ExpDataRun
-                            });
-                        }
+                            for (var k = 0; k < filteredRuns.length; k++)
+                            {
+                                var run = filteredRuns[k];
+                                var runIdentifier = run.name;
 
+                                for (var r = 0; r < run.dataRows.length; r++)
+                                {
+                                    var isValidData = false;
+                                    for (var ind = 0; ind < context.DataNames.length; ind++){
+                                        if (context.DataNames[ind] == run.dataRows[r]['Name']) {
+                                            isValidData = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!isValidData) {
+                                        continue;
+                                    }
+
+                                    var name = run.dataRows[r]['Name'].split('.');
+                                    var fileExt = name[1];
+                                    name = name[0];
+                                    var filePath = "";
+                                    var dataFile = run.dataRows[r]['DataFile'];
+                                    filePath = context.pipe + "/" + runIdentifier + "/" + dataFile;
+
+                                    //
+                                    // Link the associated LABKEY.Exp.Data object (the data file)
+                                    //
+                                    var ExpDataRun;
+                                    for (var i = 0; i < run.dataInputs.length; i++)
+                                    {
+                                        if (run.dataInputs[i].name == dataFile)
+                                        {
+                                            ExpDataRun = run.dataInputs[i];
+                                        }
+                                    }
+
+                                    d.push({
+                                        name: name,
+                                        fileExt: fileExt,
+                                        filePath: filePath,
+                                        expDataRun: ExpDataRun
+                                    });
+                                }
+                            }
+                        }
                         context.rawInputs = d;
 
                         if (Ext4.isFunction(callback)) {
@@ -233,8 +291,8 @@ Ext4.define('LABKEY.hplc.DataService', {
         //
         // Get the associated Batch information
         //
-        this.getBatchDefinition(schema, context.RunId, function(def) {
-            context.RunDefinition = def; loader();
+        this.getBatchDefinition(schema, context.RunIds, function(def) {
+            context.RunDefinitions = def; loader();
         }, this);
     },
 
@@ -280,15 +338,15 @@ Ext4.define('LABKEY.hplc.DataService', {
         }
     },
 
-    getBatchDefinition : function(assaySchema /* String */, runId /* Number */, callback, scope) {
+    getBatchDefinition : function(assaySchema /* String */, runIds /* Number */, callback, scope) {
         LABKEY.Query.selectRows({
             schemaName: assaySchema,
             queryName: 'Runs',
             requiredVersion: 13.2,
-            filterArray: [ LABKEY.Filter.create('RowId', runId) ],
+            filterArray: [ LABKEY.Filter.create('RowId', runIds.join(';'), LABKEY.Filter.Types.IN) ],
             success: function(data) {
                 if (Ext4.isFunction(callback)) {
-                    callback.call(scope || this, data.rows[0]); // LABKEY.Query.Row
+                    callback.call(scope || this, data.rows); // LABKEY.Query.Row
                 }
             },
             scope: this

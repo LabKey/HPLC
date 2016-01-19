@@ -1,0 +1,29 @@
+<div>
+    <input type="text" name="runs-search" placeholder="Search Runs" style="margin-bottom: 20px;"/>
+    <div id="runsResult"></div>
+</div>
+<script type="text/javascript">
+    (function() {
+
+        function init() {
+
+            // Initialize the display grid
+            var qwp = new LABKEY.QueryWebPart({
+                renderTo: 'runsResult',
+                schemaName: LABKEY.page.assay.protocolSchemaName,
+                queryName: 'Data',
+                frame: 'none'
+            });
+
+            // Bind search
+            Ext.get(Ext.DomQuery.select('input[name="runs-search"]')[0]).on('keyup', function(evt, el) {
+                var filter = LABKEY.Filter.create('WRAPPEDROWID/Search', Ext.get(el).getValue(), LABKEY.Filter.Types.CONTAINS);
+                qwp.getDataRegion().addFilter(filter);
+            }, undefined /* scope */, {
+                buffer: 250
+            });
+        }
+
+        Ext.onReady(init);
+    })();
+</script>

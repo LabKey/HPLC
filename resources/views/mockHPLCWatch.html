@@ -1,0 +1,232 @@
+<input type="button" class="hplc-run-btn" value="Load Assay Samples">
+<div class="hplc-error-log" style="color: red;"></div>
+<div><ul class="hplc-status-log"></ul></div>
+<script type="text/javascript">
+
+    (function() {
+
+        var RUN_FOLDER = "TestRun001";
+
+        function getEl(selector) {
+            return Ext4.get(Ext4.DomQuery.select(selector)[0]);
+        }
+
+        function writeError(msg) {
+            var errorLog = getEl('.hplc-error-log');
+            errorLog.update(msg);
+        }
+
+        function writeStatus(msg) {
+            var statusLog = getEl('.hplc-status-log');
+            var logEl = document.createElement("li");
+            var logEntry = document.createTextNode(Ext4.htmlEncode(msg));
+            logEl.appendChild(logEntry);
+            statusLog.appendChild(logEl);
+        }
+
+        function init() {
+            // initialize the button
+            var btn = getEl('.hplc-run-btn');
+            btn.on('click', mockPrep);
+            writeStatus("Ready to Load");
+        }
+
+        function mockPrep() {
+            resolveAssay(function(assay) {
+                writeStatus("Resolved Assay");
+                resolvePipeline(function(pipeCtx) {
+                    writeStatus("Resolved Pipeline");
+                    resolveResultFiles(pipeCtx, function(fileSet) {
+                        writeStatus("Resolved File Set");
+                        loadAssay(assay, fileSet);
+                    });
+                });
+            });
+        }
+
+        function loadAssay(assay, fileSet) {
+            var run = generateRun(fileSet);
+            writeStatus("Run Prepared");
+            saveRun(assay, run);
+        }
+
+        function generateRun(fileSet) {
+            var run = new LABKEY.Exp.Run({
+                name: RUN_FOLDER,
+                properties: {
+                    Published: false,
+                    Machine: 'TEST345',
+                    RunIdentifier: RUN_FOLDER
+                }
+            });
+
+            var dataRows = [],
+                dataInputs = [];
+
+            Ext4.each(fileSet, function(file) {
+                dataRows.push({
+                    Name: file.text,
+                    DataFile: file.text,
+                    TestType: 'SMP'
+                });
+                dataInputs.push({
+                    name: file.text,
+                    dataFileURL: file.dataFileURL
+                });
+            });
+
+            run.dataRows = dataRows;
+            run.dataInputs = dataInputs;
+            return run;
+        }
+
+        function saveRun(assay, run) {
+            LABKEY.Experiment.saveBatch({
+                assayId: assay.id,
+                batch: {
+                    batchProtocolId: assay.id,
+                    runs: [{
+                        "name": run.name,
+                        "properties": run.properties,
+                        "dataRows": run.dataRows,
+                        "dataInputs": run.dataInputs
+                    }]
+                },
+                success: function(batch) {
+                    writeStatus("Test Run Upload Complete");
+                }
+            });
+        }
+
+        // resolves which assay is the raw assay that
+        // this test is targeting
+        // Hands back a definition as defined by LABKEY.Assay.getByType
+        function resolveAssay(callback, scope)
+        {
+            if (Ext4.isFunction(callback)) {
+                LABKEY.Assay.getByType({
+                    type: 'Raw HPLC',
+                    success: function(definitions) {
+                        if (Ext4.isArray(definitions)) {
+                            if (definitions.length == 1) {
+                                callback.call(scope || this, definitions[0]);
+                            }
+                            else {
+                                writeError('Test only works when one assay is defined of type Raw HPLC');
+                            }
+                        }
+                        else {
+                            writeError('Failed to find an assay of type Raw HPLC');
+                        }
+                    },
+                    failure: function() { writeError('Failed to find an assay of type Raw HPLC'); }
+                });
+            }
+        }
+
+        function resolvePipeline(callback, scope)
+        {
+            if (Ext4.isFunction(callback)) {
+                Ext4.Ajax.request({
+                    url: LABKEY.ActionURL.buildURL('hplc', 'getHPLCPipelineContainer.api'),
+                    method: 'GET',
+                    success: function(response) {
+                        var context = Ext4.decode(response.responseText);
+                        if (Ext4.isObject(context) && !Ext4.isEmpty(context.containerPath) && !Ext4.isEmpty(context.webDavURL)) {
+                            callback.call(scope || this, context);
+                        }
+                        else {
+                            writeError('Failed to load the pipeline context for Raw HPLC');
+                        }
+                    },
+                    failure : function() {
+                        writeError('Failed to load the pipeline context for Raw HPLC');
+                    }
+                });
+            }
+        }
+
+        /**
+         * Each fileSet result has the following form
+         */
+//        {
+//            "id": "/_webdav/FormulationsTest/@pipeline/HPLCAssayData/2014_9_19_15_53_20/BLANK235.TXT",
+//            "href": "/labkey/_webdav/FormulationsTest/%40pipeline/HPLCAssayData/2014_9_19_15_53_20/BLANK235.TXT",
+//            "text": "BLANK235.TXT",
+//            "iconHref": "/labkey/_icons/txt.png",
+//            "options": "OPTIONS, GET, HEAD, COPY, DELETE, MOVE, LOCK, UNLOCK, PROPFIND",
+//            "creationdate": "2014/09/23 16:01:21",
+//            "collection": false,
+//            "lastmodified": "2014/09/23 16:01:21",
+//            "contentlength": 395296,
+//            "size": 395296,
+//            "contenttype": "text/plain",
+//            "etag": "W/\"395296-1411513281741\"",
+//            "leaf": true
+//        }
+        function resolveResultFiles(pipeCtx, callback, scope)
+        {
+            if (Ext4.isFunction(callback)) {
+                LABKEY.Ajax.request({
+                    url: pipeCtx.webDavURL + '/' + RUN_FOLDER,
+                    method: 'GET',
+                    params: { method: 'JSON' },
+                    success: function(response) {
+                        var json = Ext4.decode(response.responseText);
+                        if (Ext4.isDefined(json) && Ext4.isArray(json.files)) {
+                            if (!Ext4.isEmpty(json.files)) {
+                                resolveDataFileURL(json.files, pipeCtx, callback, scope);
+                            }
+                            else {
+                                writeError("No run files are available in configured HPLC path.");
+                            }
+                        }
+                        else {
+                            writeError("Failed to load webdav files.");
+                        }
+                    }
+                });
+            }
+        }
+
+        /**
+         * will append a 'dataFileURL' property to all files resolved as resources
+         */
+        function resolveDataFileURL(files, pipeCtx, callback, scope)
+        {
+            if (Ext4.isFunction(callback)) {
+
+                var received = 0;
+                var newFiles = [];
+
+                function done(file, results)
+                {
+                    Ext4.each(files, function(f) {
+                        if (f.text === file.text) {
+                            f['dataFileURL'] = results['DataFileUrl'];
+                            newFiles.push(f);
+                        }
+                    });
+                    received++;
+
+                    if (received == files.length) {
+                        callback.call(scope || this, newFiles);
+                    }
+                }
+
+                Ext4.each(files, function(file) {
+                    LABKEY.Ajax.request({
+                        url: LABKEY.ActionURL.buildURL('hplc', 'getHPLCResource.api'),
+                        method: 'GET',
+                        params: { path: file.id, test: true },
+                        success: function(response) {
+                            done(file, Ext4.decode(response.responseText));
+                        }
+                    });
+                });
+            }
+        }
+
+        Ext4.onReady(init);
+    })();
+</script>
