@@ -1,0 +1,11 @@
+<view xmlns="http://labkey.org/data/xml/view">
+    <dependencies>
+        <dependency path="Ext4"/>
+        <dependency path="Ext4ClientApi"/>
+        <dependency path="Dropzone"/>
+        <dependency path="File"/>
+        <dependency path="internal-FileDrop"/>
+        <dependency path="hplc/uploadLog.js"/>
+        <dependency path="hplc/upload.js"/>
+    </dependencies>
+</view>
