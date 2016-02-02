@@ -2,19 +2,26 @@
  * Created by iansigmon on 1/20/16.
  */
 (function() {
+    Ext4.QuickTips.init();
 
-    var clearCachedReports = function(runName) {
-        //TODO: delete contents of working folder
+    var setWorkingDirectory = function() {
+        var dir = 'TEMP_HPLC_' + getRunFolderName();
+        sessionStorage.hplcWorkingDirectory = dir;
+        return dir;
     };
 
-    var RUN_FOLDER_NAME = 'myTestFolderName';
-
-    var tempFolder = null;
     var getTempFolderName = function() {
-        if(!tempFolder)
-            tempFolder = RUN_FOLDER_NAME;
+        if (!sessionStorage.hplcWorkingDirectory)
+            setWorkingDirectory();
+        return sessionStorage.hplcWorkingDirectory;
+    };
 
-        return tempFolder;
+    var getRunFolderName = function() {
+        var now = new Date();
+        var parts = [now.getFullYear(), now.getMonth() + 1 /*javascript uses 0 based month*/,
+                now.getDate(), now.getHours(),now.getMinutes(),now.getSeconds()]
+
+        return parts.join('_');
     };
 
     var uploadLog = Ext4.create('LABKEY.hplc.UploadLog', {
@@ -24,6 +31,19 @@
         workingDirectory: getTempFolderName()
     });
 
+    var clearCachedReports = function(callback, scope) {
+        uploadLog.getStore().removeAll();
+        uploadLog.getStore().sync();
+        form.getForm().reset();
+
+        //delete contents of working folder
+        uploadLog.fileSystem.deletePath({
+            path: uploadLog.getFullWorkingPath(),
+            isFile: false,
+            success:callback,
+            scope: scope
+        });
+    };
 
     var dropzone; var form;
     var init = function() {
@@ -34,9 +54,9 @@
                 items: getAssayFormFields(),
                 collapsible: false,
                 region: 'west',
-                width:'30%',
+                width:'25%',
                 height:200,
-                minWidth: 300,
+                minWidth: 200,
                 minHeight: 200
             };
         };
@@ -75,8 +95,7 @@
 
                     this.on('processing', function (file) {
                         var cwd = uploadLog.getFullWorkingPath();
-                        if (cwd)
-                        {
+                        if (cwd) {
                             var uri = uploadLog.fileSystem.concatPaths(cwd, file.fullPath ? file.fullPath : file.name);
 
                             // Folder the file will be POSTed into
@@ -94,7 +113,7 @@
                         uploadLog.getStore().sync();
                     });
                 },
-                show: !(uploadLog.getStore().getTotalCount() > 0)
+                show: !(uploadLog.getStore().getCount() > 0)
             });
 
             this.dropzone = dropzone;
@@ -104,7 +123,6 @@
         form = Ext4.create('Ext.form.Panel', {
             renderTo: 'upload-run-form',
             tempFolder: getTempFolderName(),
-            //url: LABKEY.ActionURL.buildURL("assay", "assayFileUpload", getTempFolderName()),
             layout: 'border',
             height:200,
             border: false,
@@ -123,25 +141,40 @@
                     uploadLog.getStore().add(process);
                     uploadLog.getStore().sync();
                 },
-                actionfailed: function (_form, action, eOpts) { alert("Server Failed"); }
+                actionfailed: function (_form, action, eOpts) { alert("Server Failed"); },
+
+                //TODO: Resize
+                //afterrender: function() {
+                //    Ext4.defer(function () {
+                //        var size = Ext4.getBody().getBox();
+                //        this.resize.call(this, size.width, size.height);
+                //    }, 300, this);
+                //}
             },
+
+            //TODO: Resize
+            //resize : function(w,h) {
+            //        LABKEY.ext4.Util.resizeToViewport(this, w, h, 46, 32);
+            //}
         });
+
+
+        //TODO: Resize
+        //Ext4.EventManager.onWindowResize(form.resize, form);
+
+        window.onbeforeunload = function(){
+            if(form.isDirty() || uploadLog.getStore().getCount() > 0) {
+                return 'Unsaved changes will be lost. Continue?';
+            }
+        };
+
+        window.onunload = function(){
+            clearCachedReports();
+            sessionStorage.hplcWorkingDirectyory = undefined;
+        };
 
         var drop = dropInit();
     };
-
-    //
-    //var equalsIgnoresCase = function(str1, str2) {
-    //    return str1.toLowerCase() == str2.toLowerCase();
-    //};
-    //
-    //var copyWorkingSet = function(workingSet, run) {
-    //    for (var i=0; i<WORKING_SET_SIZE; i++)
-    //    {
-    //        workingSet[i].ExtractionNumber = i + 1;
-    //        run.dataRows.push(workingSet[i]);
-    //    }
-    //};
 
     var getAssayFormFields = function() {
 
@@ -152,36 +185,47 @@
 
         var configs = getConfigs(runFields);
 
-        //Add a reset button
         configs.push(
-            Ext4.create('Ext.Button',{
-                text: 'Clear Run',
-                handler: function() {
-                    //TODO: Clear form fields
+            Ext4.create('Ext.panel.Panel', {
+                border:false,
+                items: [
+                    {
+                        //Add a reset button
+                        xtype:'button',
+                        text: 'Clear Run',
+                        cls: 'labkey-button',
+                        handler: function () {
+                            clearCachedReports(function () {
+                                uploadLog.workingDirectory = setWorkingDirectory();
+                                //Recreate working dir
+                                uploadLog.checkOrCreateWorkingFolder(uploadLog.getWorkingPath(), uploadLog);
+                            }, this);
+                        }
+                    }, {
+                        //Add a submit button
+                        xtype:'button',
+                        text: 'Submit Run',
+                        cls: 'labkey-button',
+                        handler: function () {
+                            var form = this.up('form').getForm();
 
-                    uploadLog.getStore().removeAll();
-                    uploadLog.getStore().sync();
-
-                    //TODO: delete temp uploads
-                    clearCachedReports(getTempFolderName());
-                }
-            })
-        );
-
-        //Add a submit button
-        configs.push(
-                Ext4.create('Ext.Button',{
-                    text: 'Submit Run',
-                    handler: function() {
-                        var form = this.up('form').getForm();
-
-                        if (form.isValid()) {
-                            closeRun(form);
+                            if(uploadLog.getStore().getCount() == 0)
+                            {
+                                showNoFilesError();
+                            }
+                            else if (form.isValid()) {
+                                closeRun(form);
+                            }
                         }
                     }
-                })
+                ]
+            })
         );
         return configs;
+    };
+
+    var showNoFilesError = function(){
+        alert('Please add run result file(s)');
     };
 
     var getConfigs = function(fields) {
@@ -198,7 +242,9 @@
 
     var getExtConfig = function(meta) {
         setLookupConfig(meta);
-        var config = LABKEY.ext4.Util.getFormEditorConfig(meta);
+        var config = LABKEY.ext4.Util.getFormEditorConfig(meta
+            //, {labelCls: 'labkey-form-label'}
+        );
         config.id = config.name;
 
         return config;
@@ -218,14 +264,9 @@
 
     var closeRun = function(form) {
         var fieldValues = form.getFieldValues();
-        var runFolder = fieldValues["RunIdentifier"];
+        var runFolder = getRunFolderName();
 
-        //TODO: move files from temp upload dir to runDir
-        var files = uploadLog.commitFiles(runFolder, generateAndSaveRun, this, fieldValues);
-
-        //TODO: generate run object
-        //var run = generateAndSaveRun(runFolder, fieldValues, files);
-        //saveRun(LABKEY.page.assay, run);
+        uploadLog.commitRun(runFolder, generateAndSaveRun, this, fieldValues);
     };
 
     function saveRun(run) {
@@ -243,10 +284,10 @@
                 }]
             },
             success: function(batch) {
-                writeStatus("Run Upload Complete");
-
-                //TODO: Clear form?
-                //TODO: return to HPLC page?
+                clearCachedReports(function(){
+                    uploadLog.workingDirectory = setWorkingDirectory();
+                    window.location = LABKEY.ActionURL.buildURL("assay", "assayRuns", LABKEY.ActionURL.getContainer(), LABKEY.ActionURL.getParameters());
+                },this);
             }
         }, this);
     }
@@ -254,7 +295,7 @@
     var generateAndSaveRun = function(files, fieldValues){
 
         var run = new LABKEY.Exp.Run({
-            name: fieldValues['RunIdentifier'],
+            name: getRunFolderName(),
             properties: fieldValues
         });
 
@@ -277,11 +318,6 @@
         run.dataInputs = dataInputs;
         saveRun(run);
     };
-
-
-
-
-
 
     Ext4.onReady(init);
 })();
