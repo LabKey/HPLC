@@ -1,5 +1,7 @@
 <view xmlns="http://labkey.org/data/xml/view">
     <dependencies>
+        <dependency path="hplc/hplc.css"/>
+
         <dependency path="Ext4"/>
         <dependency path="Ext4ClientApi"/>
         <dependency path="Dropzone"/>

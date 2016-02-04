@@ -26,9 +26,9 @@
 
     var uploadLog = Ext4.create('LABKEY.hplc.UploadLog', {
         region: 'center',
-        layout: 'fit',
         id:'uploadLog-dropzone',
-        workingDirectory: getTempFolderName()
+        workingDirectory: getTempFolderName(),
+        flex:2
     });
 
     var clearCachedReports = function(callback, scope) {
@@ -51,13 +51,55 @@
         var getAssayForm = function() {
             return {
                 xtype:'form',
+                title:'Run Fields',
+                id: 'hplc-run-form',
                 items: getAssayFormFields(),
+                border: false,
+                layout:'vbox',
+                shrinkWrap:true,
+                shrinkWrapDock:true,
+                buttonAlign:'center',
+                buttons: [
+                    {
+                        //Add a reset button
+                        xtype:'button',
+                        text: 'Clear Run',
+                        cls: 'labkey-button',
+                        id: 'clearBtn',
+                        handler: function () {
+                            clearCachedReports(function () {
+                                uploadLog.workingDirectory = setWorkingDirectory();
+                                //Recreate working dir
+                                uploadLog.checkOrCreateWorkingFolder(uploadLog.getWorkingPath(), uploadLog);
+                            }, this);
+                        }
+                    }, {
+                        //Add a Save button
+                        xtype:'button',
+                        text: 'Save Run',
+                        cls: 'labkey-button',
+                        id: 'saveBtn',
+                        formBind:true,
+                        handler: function () {
+                            var form = this.up('form').getForm();
+
+                            if(uploadLog.getStore().getCount() == 0)
+                            {
+                                showNoFilesError();
+                            }
+                            else if (form.isValid()) {
+                                closeRun(form);
+                            }
+                        }
+                    }
+                ],
+
                 collapsible: false,
                 region: 'west',
                 width:'25%',
-                height:200,
-                minWidth: 200,
-                minHeight: 200
+                minWidth: 280,
+                minHeight:300,
+                flex: 1
             };
         };
 
@@ -102,15 +144,31 @@
                             var folderUri = uploadLog.fileSystem.getParentPath(uri);
                             this.options.url = folderUri;
                         }
-                    });
 
-                    this.on('success', function(file, response, evt) {
+                        //Add entry to uploadLog
                         var process = uploadLog.getModelInstance({
                             uploadTime: new Date(),
                             fileName: file.name
                         });
-                        uploadLog.getStore().add(process);
+                        process = uploadLog.getStore().add(process)[0];
+                        file.workingId = process.get('id');
                         uploadLog.getStore().sync();
+
+                        //Update inprogress tracker
+                        processingCounter.value++;
+                        form.isValid();
+                    });
+
+                    //Update file progress bar
+                    this.on('uploadprogress',function(file, progress, bytesSent){
+                        var model = uploadLog.getStore().getById(file.workingId);
+                        model.set('progress', progress);
+                    });
+
+                    //Update inprogress tracker
+                    this.on('success', function(file, response, evt) {
+                        processingCounter.value--;
+                        form.isValid();
                     });
                 },
                 show: !(uploadLog.getStore().getCount() > 0)
@@ -118,15 +176,16 @@
 
             this.dropzone = dropzone;
             dropzone.uploadPanel = uploadLog;
+            dropzone.form = form;
         };
 
         form = Ext4.create('Ext.form.Panel', {
             renderTo: 'upload-run-form',
             tempFolder: getTempFolderName(),
             layout: 'border',
-            height:200,
+            height:300,
             border: false,
-            bodyStyle: 'background-color: transparent',
+            bodyStyle: 'background-color: transparent;',
             items: [
                 getAssayForm(),
                 uploadLog
@@ -150,7 +209,7 @@
                 //        this.resize.call(this, size.width, size.height);
                 //    }, 300, this);
                 //}
-            },
+            }
 
             //TODO: Resize
             //resize : function(w,h) {
@@ -176,6 +235,15 @@
         var drop = dropInit();
     };
 
+    var processingCounter = Ext4.create('Ext.form.field.Hidden', {
+        xtype:'hidden',
+        validate: function(){
+            return this.value === 0;
+        },
+        validateOnChange:true,
+        value: 0
+    });
+
     var getAssayFormFields = function() {
 
         var assay = LABKEY.page.assay;
@@ -185,42 +253,8 @@
 
         var configs = getConfigs(runFields);
 
-        configs.push(
-            Ext4.create('Ext.panel.Panel', {
-                border:false,
-                items: [
-                    {
-                        //Add a reset button
-                        xtype:'button',
-                        text: 'Clear Run',
-                        cls: 'labkey-button',
-                        handler: function () {
-                            clearCachedReports(function () {
-                                uploadLog.workingDirectory = setWorkingDirectory();
-                                //Recreate working dir
-                                uploadLog.checkOrCreateWorkingFolder(uploadLog.getWorkingPath(), uploadLog);
-                            }, this);
-                        }
-                    }, {
-                        //Add a submit button
-                        xtype:'button',
-                        text: 'Submit Run',
-                        cls: 'labkey-button',
-                        handler: function () {
-                            var form = this.up('form').getForm();
+        configs.push(processingCounter);
 
-                            if(uploadLog.getStore().getCount() == 0)
-                            {
-                                showNoFilesError();
-                            }
-                            else if (form.isValid()) {
-                                closeRun(form);
-                            }
-                        }
-                    }
-                ]
-            })
-        );
         return configs;
     };
 
@@ -243,7 +277,6 @@
     var getExtConfig = function(meta) {
         setLookupConfig(meta);
         var config = LABKEY.ext4.Util.getFormEditorConfig(meta
-            //, {labelCls: 'labkey-form-label'}
         );
         config.id = config.name;
 

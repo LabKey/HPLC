@@ -3,6 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
  */
+
 Ext4.define('LABKEY.hplc.UploadLog', {
 
     extend: 'Ext.panel.Panel',
@@ -14,7 +15,6 @@ Ext4.define('LABKEY.hplc.UploadLog', {
 
             Ext4.define(this.modelClass, {
                 extend: 'Ext.data.Model',
-
                 fields: [
                     { name: 'fileName', type: 'string' },
                     { name: 'uploadFileURL', type: 'string' },
@@ -33,7 +33,8 @@ Ext4.define('LABKEY.hplc.UploadLog', {
                             return value;
                         }
                     },
-                    { name: 'uploadTime', type: 'date' }
+                    { name: 'uploadTime', type: 'date' },
+                    { name:'progress', type:'int'}
                 ],
 
                 publishMessage : function(message) {
@@ -58,6 +59,7 @@ Ext4.define('LABKEY.hplc.UploadLog', {
                 rootName: 'fileset'
             });
 
+            this.checkOrCreateWorkingFolder(this.fileSystem.getBaseURL(), this);
             this.checkOrCreateWorkingFolder(this.fileSystem.concatPaths(this.fileSystem.getBaseURL(), 'Temp'), this);
             this.checkOrCreateWorkingFolder(this.getWorkingPath(), this);
 
@@ -71,7 +73,8 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             this._grid = Ext4.create('Ext.grid.Panel', {
                 height: 300,
                 store: this.getStore(),
-                columns: this.getColumns()
+                columns: this.getColumns(),
+                invalidateScrollerOnRefresh:false
             });
         }
 
@@ -83,13 +86,11 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             {
                 xtype: 'templatecolumn',
                 text: 'File Name',
-                width: 125,
+                width: 250,
                 tpl: [
                     '<tpl if="uploadFileURL !== undefined && uploadFileURL.length &gt; 0">',
                     '<a href="{uploadFileURL}">{fileName:htmlEncode}</a>',
                     '<tpl else>',
-                    //'<span>{uploadFileURL}</span>',
-
                     '<span>{fileName:htmlEncode}</span>',
                     '</tpl>'
                 ]
@@ -100,6 +101,25 @@ Ext4.define('LABKEY.hplc.UploadLog', {
                 , width: 150
             }
             , {
+                text: 'Upload Progress',
+                width: 130,
+                dataIndex: 'progress',
+                sortable: true,
+                renderer: function (v, m, r) {
+                    var calcValue = v/100;
+                    var pbRenderer = (
+                        function () {
+                            var b = new Ext4.ProgressBar({height: 15});
+                            return function (val) {
+                                b.updateProgress(val);
+                                return Ext4.DomHelper.markup(b.getRenderTree());
+                            };
+                        }
+                    ) ();
+
+                    return pbRenderer(calcValue);
+                }
+            }, {
                 xtype:'actioncolumn',
                 width:20,
                 items: [{
@@ -249,7 +269,7 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             method: 'GET',
             params: {method: 'JSON'},
             success: function (response) {
-                //Working directory exists
+                //directory exists
             },
             failure: function(b, xhr){
                 //Working directory not found, create it.
@@ -272,28 +292,4 @@ Ext4.define('LABKEY.hplc.UploadLog', {
         return this.fileSystem.getURI(this.getWorkingPath());
     },
     workingDirectory:''
-
-    ////TODO: add progress bar
-    //, progressRenderer: function () {
-    //    var b = new Ext.ProgressBar({height: 15});
-    //    return function(progress) {
-    //        b.updateProgress(progress);
-    //        return Ext.DomHelper.markup(b.getRenderTree());
-    //    };
-    //}
-    //
-    //, progressRenderer: function (v, m, r) {
-    //    //if(!r) return;
-    //    //
-    //    //var tmpValue = v / 100;
-    //    //var tmpText = r.data.Data1 + ' / ' +r.data.Data2;
-    //    //var renderer = (function (pValue, pText) {
-    //    //    var b = new Ext.ProgressBar();
-    //    //    return function(pValue, pText) {
-    //    //        b.updateProgress(pValue, pText, true);
-    //    //        return Ext.DomHelper.markup(b.getRenderTree());
-    //    //    };
-    //    //})(tmpValue, tmpText);
-    //    //return renderer(tmpValue, tmpText);
-    //}
 });
