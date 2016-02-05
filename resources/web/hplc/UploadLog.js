@@ -59,10 +59,9 @@ Ext4.define('LABKEY.hplc.UploadLog', {
                 rootName: 'fileset'
             });
 
-            this.checkOrCreateWorkingFolder(this.fileSystem.getBaseURL(), this);
-            this.checkOrCreateWorkingFolder(this.fileSystem.concatPaths(this.fileSystem.getBaseURL(), 'Temp'), this);
-            this.checkOrCreateWorkingFolder(this.getWorkingPath(), this);
+            window.fileSystem = this.fileSystem;
 
+            this.createWorkingFolder();
         }, this);
 
         this.callParent();
@@ -262,29 +261,82 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             });
         }
     },
+
+    //TODO: this should probably just be an action
+    createWorkingFolder: function() {
+        this.checkOrCreateBaseFolder();
+    },
+
     //Check if working folder exists
-    checkOrCreateWorkingFolder: function (targetURL, scope) {
+    checkOrCreateBaseFolder: function () {
+        var targetURL = this.fileSystem.getBaseURL();
+
         LABKEY.Ajax.request({
-            url: scope.fileSystem.getURI(targetURL),
+            url: this.fileSystem.getURI(targetURL),
             method: 'GET',
             params: {method: 'JSON'},
             success: function (response) {
                 //directory exists
+                this.checkOrCreateTempFolder();
             },
             failure: function(b, xhr){
-                //Working directory not found, create it.
-                scope.fileSystem.createDirectory({
-                    path: scope.fileSystem.getURI(targetURL),
-                    success: function () {
+                this.createFolder(targetURL, this.checkOrCreateTempFolder, this);
+            },
+            scope: this
+        }, this);
+    },
 
-                    },
-                    failure: function () {
-                        alert("Couldn't generate working directory");
-                    }
-                }, scope);
-            }
+    //Check if working folder exists
+    checkOrCreateTempFolder: function () {
+        var targetURL = this.fileSystem.concatPaths(this.fileSystem.getBaseURL(), 'Temp');
+
+        LABKEY.Ajax.request({
+            url: this.fileSystem.getURI(targetURL),
+            method: 'GET',
+            params: {method: 'JSON'},
+            success: function (response) {
+                //directory exists
+                this.checkOrCreateWorkingFolder();
+            },
+            failure: function(b, xhr){
+                this.createFolder(targetURL, this.checkOrCreateWorkingFolder, this);
+            },
+            scope:this
+        }, this);
+    },
+
+    //Check if working folder exists
+    checkOrCreateWorkingFolder: function () {
+        var targetURL = this.getWorkingPath();
+
+        LABKEY.Ajax.request({
+            url: this.fileSystem.getURI(targetURL),
+            method: 'GET',
+            params: {method: 'JSON'},
+            success: function (response) {
+            },
+            failure: function(b, xhr){
+                this.createFolder(targetURL, null, this);
+            },
+            scope: this
+        }, this);
+    },
+
+    createFolder:function(targetDir, callback, scope, options){
+        //Working directory not found, create it.
+        scope.fileSystem.createDirectory({
+            path: scope.fileSystem.getURI(targetDir),
+            success: function () {
+                if (callback)
+                    callback.call(scope, options);
+            },
+            failure: function () {
+                alert("Couldn't generate working directory");
+            },
+            scope: scope
         }, scope);
     },
+
     getWorkingPath: function(){
         return this.fileSystem.concatPaths(this.fileSystem.getBaseURL(), 'Temp/' + this.workingDirectory);
     },

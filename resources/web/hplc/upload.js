@@ -110,6 +110,7 @@
                 maxFiles: 5000,
                 // Allow uploads of 100GB files
                 maxFilesize: 100*(1024*1024),
+                clickable:false,
 
                 peer: function() {
                     // Get the grid component from the outer Browser component
@@ -138,7 +139,7 @@
                     this.on('processing', function (file) {
                         var cwd = uploadLog.getFullWorkingPath();
                         if (cwd) {
-                            var uri = uploadLog.fileSystem.concatPaths(cwd, file.fullPath ? file.fullPath : file.name);
+                            var uri = uploadLog.fileSystem.concatPaths(cwd, file.name);
 
                             // Folder the file will be POSTed into
                             var folderUri = uploadLog.fileSystem.getParentPath(uri);
@@ -319,7 +320,7 @@
             success: function(batch) {
                 clearCachedReports(function(){
                     uploadLog.workingDirectory = setWorkingDirectory();
-                    window.location = LABKEY.ActionURL.buildURL("assay", "assayRuns", LABKEY.ActionURL.getContainer(), LABKEY.ActionURL.getParameters());
+                    window.location = LABKEY.ActionURL.buildURL("assay", "assayBegin", LABKEY.ActionURL.getContainer(), LABKEY.ActionURL.getParameters());
                 },this);
             }
         }, this);
