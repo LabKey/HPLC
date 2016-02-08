@@ -36,6 +36,9 @@
         uploadLog.getStore().sync();
         form.getForm().reset();
 
+        dropzone.removeAllFiles(true);
+        LABKEY.internal.FileDrop.showDropzones();
+
         //delete contents of working folder
         uploadLog.fileSystem.deletePath({
             path: uploadLog.getFullWorkingPath(),
@@ -130,6 +133,9 @@
                         done("Drag-and-drop upload of folders is not supported by your browser. Please consider using Google Chrome or an external WebDAV client.");
                         return;
                     }
+
+                    //Hide dropzone overlay
+                    LABKEY.internal.FileDrop.hideDropzones();
 
                     done();
                 },
