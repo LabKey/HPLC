@@ -28,11 +28,9 @@ import org.labkey.test.pages.HPLCUploadPage;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.HPLCInitializer;
-import org.labkey.test.util.PortalHelper;
 import org.junit.Assert;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -155,9 +153,7 @@ public class HPLCRawTest extends BaseWebDriverTest
         ///////////  Check clearing run  ///////////
         //Create new run
 
-        clickImportButton();
-
-
+        clickButton("Import Data");
         uploadPage.waitForPageLoad();
         runName = "importTest2";
         uploadPage.setRunIDField(runName);
@@ -182,17 +178,9 @@ public class HPLCRawTest extends BaseWebDriverTest
     private void navigateToImportPage()
     {
         navigateToAssayLandingPage();
-        clickImportButton();
-
+        clickButton("Import Data");
         HPLCUploadPage page = new HPLCUploadPage(this);
         page.waitForPageLoad();
-    }
-
-    private void clickImportButton()
-    {
-        ///// swap when Issue #25548 fixed
-        this.beginAt(getUploadPageRelativeURL());
-        //clickButton("Import Data");    //Import Button doesn't show if no study
     }
 
     private String getUploadPageRelativeURL()
