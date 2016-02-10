@@ -113,7 +113,6 @@
                 maxFiles: 5000,
                 // Allow uploads of 100GB files
                 maxFilesize: 100*(1024*1024),
-                clickable:false,
 
                 peer: function() {
                     // Get the grid component from the outer Browser component

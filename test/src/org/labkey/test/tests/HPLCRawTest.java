@@ -32,6 +32,7 @@ import org.labkey.test.util.PortalHelper;
 import org.junit.Assert;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,17 +81,16 @@ public class HPLCRawTest extends BaseWebDriverTest
         File testFile = files[3];
 
         //Test search by file
-        setFormElement(HPLCAssayBeginPage.Locators.searchBox, testFile.getName());
+        HPLCAssayBeginPage beginPage = new HPLCAssayBeginPage(this);
+        beginPage.setSearchBox(testFile.getName());
         DataRegionTable table = new DataRegionTable("aqwp2", this);
         Assert.assertEquals(1, table.getDataRowCount());
 
-
         //Test search by Run Identifier
-        setFormElement(HPLCAssayBeginPage.Locators.searchBox, "");
-        setFormElement(HPLCAssayBeginPage.Locators.searchBox, "TestRun001");
+        beginPage.clearSearchBox();
+        beginPage.setSearchBox("TestRun001");
         table = new DataRegionTable("aqwp2", this);
         Assert.assertEquals(files.length, table.getDataRowCount());
-
     }
 
     @Test
@@ -125,69 +125,78 @@ public class HPLCRawTest extends BaseWebDriverTest
 
         File[] files = TestFileUtils.getSampleData(SAMPLE_DATA_LOC).listFiles();
 
-
         ///////////  Check run creation with single file  ///////////
         File testFile = files[3];
-        setFormElement(HPLCUploadPage.Locators.fileInput, testFile);
-        waitForElement(HPLCUploadPage.Locators.fileLogCellwithText(testFile.getName()));
+        HPLCUploadPage uploadPage = new HPLCUploadPage(this);
+        uploadPage.uploadFile(testFile);
 
         //Delete file
-        click(HPLCUploadPage.Locators.fileLogDeleteCell(testFile.getName()));
-        waitForElementToDisappear(HPLCUploadPage.Locators.fileLogCellwithText(testFile.getName()));
-        //TODO: Check filesystem for deleted file
+        uploadPage.deleteFile(testFile.getName());
 
         //Add a file and create run
         File secondFile = files[4];
-        setFormElement(HPLCUploadPage.Locators.fileInput, secondFile);
-        waitForElement(HPLCUploadPage.Locators.fileLogCellwithText(secondFile.getName()));
+        uploadPage.uploadFile(secondFile);
 
         String runName = "importTest1";
-        setFormElement(HPLCUploadPage.Locators.runIdentifier, runName);
-        waitForFormElementToEqual(HPLCUploadPage.Locators.runIdentifier, runName);
-        clickButton(SAVE_BUTTON, HPLCAssayBeginPage.TITLE_TEXT);
+        uploadPage.setRunIDField(runName);
+
+        //Save Run
+        clickButton(SAVE_BUTTON, runName);
 
         //Check if run results were added
-        assertElementPresent(HPLCAssayBeginPage.Locators.gridCell(runName), 1); //Look for run identifier in grid
+        HPLCAssayBeginPage beginPage = new HPLCAssayBeginPage(this);
+        beginPage.assertValuePresent(runName, 1);
 
         //Check if deleted file was added as result
-        setFormElement(HPLCAssayBeginPage.Locators.searchBox, testFile.getName()); //Filter results to deleted filename
+        beginPage.setSearchBox(testFile.getName()); //Filter results to deleted filename
         assertElementNotPresent(Ext4Helper.Locators.getGridRow(runName, 0)); //Look for added run
-        setFormElement(HPLCAssayBeginPage.Locators.searchBox, ""); //clear filter
-
+        beginPage.clearSearchBox();
 
         ///////////  Check clearing run  ///////////
         //Create new run
-        clickButton("Import Data");
-        waitForElement(HPLCUploadPage.Locators.fileInput);
+
+        clickImportButton();
+
+
+        uploadPage.waitForPageLoad();
         runName = "importTest2";
-        setFormElement(HPLCUploadPage.Locators.runIdentifier, runName);
+        uploadPage.setRunIDField(runName);
         for(File dataFile : files)
-            setFormElement(HPLCUploadPage.Locators.fileInput, dataFile);
+            uploadPage.uploadFile(dataFile);
+        assertElementPresent(Ext4Helper.Locators.getGridRow()); //Check grid has elements
 
         //clear run
         clickButton(CLEAR_BUTTON, 0);
-        assertElementNotPresent(Ext4Helper.Locators.getGridRow()); //Check grid is cleared
-        waitForFormElementToEqual(HPLCUploadPage.Locators.runIdentifier, "");
-        assertFormElementEquals(HPLCUploadPage.Locators.runIdentifier, ""); //check form is cleared
+        uploadPage.assertPageClear();
         goToProjectHome();  //Should not cause unload warning
-        //TODO: check pipeline if uploaded files were deleted
-
-//        for(File dataFile : files)
-//            setFormElement(HPLCUploadPage.Locators.fileInput, dataFile);
-
     }
 
     private void navigateToAssayLandingPage(){
         //Navigate to Landing Page
         goToProjectHome();
         clickAndWait(Locator.linkWithText(HPLCInitializer.RAW_HPLC_ASSAY));
-        waitForElement(HPLCAssayBeginPage.Locators.searchBox);
+        HPLCAssayBeginPage page = new HPLCAssayBeginPage(this);
+        page.waitForPageLoad();
     }
 
     private void navigateToImportPage()
     {
         navigateToAssayLandingPage();
-        clickButton("Import Data");
-        waitForElement(HPLCUploadPage.Locators.fileInput);
+        clickImportButton();
+
+        HPLCUploadPage page = new HPLCUploadPage(this);
+        page.waitForPageLoad();
+    }
+
+    private void clickImportButton()
+    {
+        ///// swap when Issue #25548 fixed
+        this.beginAt(getUploadPageRelativeURL());
+        //clickButton("Import Data");    //Import Button doesn't show if no study
+    }
+
+    private String getUploadPageRelativeURL()
+    {
+        return this.getCurrentRelativeURL().replace("assayBegin","moduleAssayUpload");
     }
 }

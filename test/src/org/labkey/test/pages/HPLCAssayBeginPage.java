@@ -17,10 +17,32 @@ public class HPLCAssayBeginPage
         _test = test;
     }
 
-
-    public static class Locators
+    public void setSearchBox(String value)
     {
-        public static final Locator.XPathLocator searchBox = Locator.xpath("//input[contains(@name,'runs-search')]");
+        _test.setFormElement(Locators.searchBox, value);
+        _test.waitForText("Search CONTAINS " + value);
+        _test.waitForFormElementToEqual(Locators.searchBox, value);
+    }
+
+    public void clearSearchBox()
+    {
+        setSearchBox("");
+    }
+
+    public void waitForPageLoad()
+    {
+        _test.waitForElement(Locators.searchBox, 1000);
+    }
+
+    public void assertValuePresent(String value, int qty)
+    {
+        _test.assertElementPresent(Locators.gridCell(value), qty); //Look for run identifier in grid
+    }
+
+
+    private static class Locators
+    {
+        private static final Locator.XPathLocator searchBox = Locator.xpath("//input[contains(@name,'runs-search')]");
         public static Locator.XPathLocator gridCell (String contents)
         {
             return Locator.xpath("//tr[contains(@class,'labkey-row')]//td[text()='" + contents + "']");

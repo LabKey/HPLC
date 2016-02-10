@@ -2,6 +2,9 @@ package org.labkey.test.pages;
 
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.util.Ext4Helper;
+
+import java.io.File;
 
 /**
  * Created by iansigmon on 2/4/16.
@@ -15,8 +18,36 @@ public class HPLCUploadPage
         _test = test;
     }
 
+    public void uploadFile(File file)
+    {
+        _test.setFormElement(HPLCUploadPage.Locators.fileInput, file);
+        _test.waitForElement(HPLCUploadPage.Locators.fileLogCellwithText(file.getName()));
+    }
 
-    public static class Locators
+    public void deleteFile(String fileName)
+    {
+        _test.click(HPLCUploadPage.Locators.fileLogDeleteCell(fileName));
+        _test.waitForElementToDisappear(HPLCUploadPage.Locators.fileLogCellwithText(fileName));
+    }
+
+    public void setRunIDField(String runName)
+    {
+        _test.setFormElement(HPLCUploadPage.Locators.runIdentifier, runName);
+        _test.waitForFormElementToEqual(HPLCUploadPage.Locators.runIdentifier, runName);
+    }
+
+    public void waitForPageLoad()
+    {
+        _test.waitForElement(HPLCUploadPage.Locators.fileInput, 1000);
+    }
+
+    public void assertPageClear()
+    {
+        _test.assertElementNotPresent(Ext4Helper.Locators.getGridRow()); //Check grid is cleared
+        _test.assertFormElementEquals(HPLCUploadPage.Locators.runIdentifier, ""); //check form is cleared
+    }
+
+    private static class Locators
     {
         public static final Locator.XPathLocator runIdentifier = Locator.xpath("//input[contains(@id,'RunIdentifier')]");
         public static final Locator.XPathLocator fileInput = Locator.xpath("//input[@type='file']");
