@@ -138,7 +138,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
         if (!this.northpanel) {
             this.northpanel = Ext4.create('Ext.panel.Panel', {
                 region: 'north',
-                height: 240,
+                height: 120,
                 items: [{
                     xtype: 'panel',
                     columnWidth: 0.5,
@@ -240,7 +240,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
     },
 
     getInputsSelectionModel : function() {
-        return this.westpanel.getComponent('inputsgrid').getSelectionModel();
+        return this.getWest().getComponent('inputsgrid').getSelectionModel();
     },
 
     getSelectedInputResults : function() {
@@ -248,7 +248,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
     },
 
     onStandardChange : function(standards) {
-        var form = this.northpanel.getComponent('sampleform');
+        var form = this.getQCForm();
         if (form) {
             var val = '', sep = '';
             for (var s=0; s < standards.length; s++) {
@@ -302,14 +302,16 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                 //
                 // load the appropriate content for each selected sample
                 //
-                var recieved = 0, expected = provisionalRuns.length, allContent = [],
-                        contentMap = {};
+                var received = 0,
+                    expected = provisionalRuns.length,
+                    allContent = [],
+                    contentMap = {};
 
                 var done = function(content) {
-                    recieved++;
+                    received++;
                     allContent.push(content);
                     contentMap[content.fileName] = content;
-                    if (recieved == expected) {
+                    if (received == expected) {
                         this.allContent = allContent;
                         this.contentMap = contentMap;
                         this.renderPlot(allContent, true);
@@ -416,7 +418,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                             buttons: Ext4.Msg.OK
                         });
 
-                        this.westpanel.on('expand', function(west) {
+                        this.getWest().on('expand', function(west) {
 
                             Ext4.defer(function() {
                                 this.getInputsSelectionModel().deselectAll();
@@ -427,7 +429,7 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
 
                         }, this, {single: true});
 
-                        this.westpanel.expand();
+                        this.getWest().expand();
 
                         Ext4.defer(function() {
                             Ext4.Msg.hide();
@@ -516,10 +518,10 @@ Ext4.define('LABKEY.hplc.SampleCreator', {
                     xtype: 'toolbar',
                     dock: 'top',
                     items: [{
-                        text: 'Calculate',
-                        handler: this.runAnalysis,
-                        scope: this
-                    },{
+                    //    text: 'Calculate',
+                    //    handler: this.runAnalysis,
+                    //    scope: this
+                    //},{
                         text: 'Clear Highlight',
                         handler: function() {
                             this.highlighted = undefined;

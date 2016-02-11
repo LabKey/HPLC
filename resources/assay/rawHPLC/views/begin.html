@@ -1,11 +1,20 @@
 <div>
     <input type="text" name="runs-search" placeholder="Search Runs" style="margin-bottom: 20px;"/>
+    <span id="manage-hplc-link"></span>
     <div id="runsResult"></div>
 </div>
 <script type="text/javascript">
     (function() {
 
         function init() {
+
+            Ext.get('manage-hplc-link').update(LABKEY.Utils.textLink({
+                text: 'Manage assay design',
+                href: LABKEY.ActionURL.buildURL('assay', 'designer', undefined, {
+                    rowId: LABKEY.page.assay.id,
+                    providerName: LABKEY.page.assay.type
+                })
+            }));
 
             // Initialize the display grid
             var qwp = new LABKEY.QueryWebPart({
@@ -17,8 +26,15 @@
 
             // Bind search
             Ext.get(Ext.DomQuery.select('input[name="runs-search"]')[0]).on('keyup', function(evt, el) {
-                var filter = LABKEY.Filter.create('WRAPPEDROWID/Search', Ext.get(el).getValue(), LABKEY.Filter.Types.CONTAINS);
-                qwp.getDataRegion().addFilter(filter);
+                var value = Ext.get(el).getValue();
+                var filter = LABKEY.Filter.create('WRAPPEDROWID/Search', value, LABKEY.Filter.Types.CONTAINS);
+
+                if (value) {
+                    qwp.getDataRegion().addFilter(filter);
+                }
+                else {
+                    qwp.getDataRegion().removeFilter(filter);
+                }
             }, undefined /* scope */, {
                 buffer: 250
             });

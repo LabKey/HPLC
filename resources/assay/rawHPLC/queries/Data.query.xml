@@ -26,6 +26,15 @@
                         <onClick>LABKEY.hplc.hplcSelection(dataRegion, dataRegionName)</onClick>
                     </item>
                 </buttonBarOptions>
+                <columns>
+                    <column columnName="WrappedRowId" wrappedColumnName="RowId">
+                        <fk>
+                            <!--<fkDbSchema>By not providing allows defaulting to design's schema</fkDbSchema>-->
+                            <fkTable>SearchHPLCData</fkTable>
+                            <fkColumnName>RowId</fkColumnName>
+                        </fk>
+                    </column>
+                </columns>
             </table>
         </tables>
     </metadata>
