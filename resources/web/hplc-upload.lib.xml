@@ -1,0 +1,14 @@
+<libraries xmlns="http://labkey.org/clientLibrary/xml/">
+    <library compileInProductionMode="false">
+        <script path="hplc/hplc.css"/>
+        <script path="hplc/uploadLog.js"/>
+        <script path="hplc/upload.js"/>
+    </library>
+    <dependencies>
+        <dependency path="Ext4"/>
+        <dependency path="Ext4ClientApi"/>
+        <dependency path="Dropzone"/>
+        <dependency path="File"/>
+        <dependency path="internal-FileDrop"/>
+    </dependencies>
+</libraries>

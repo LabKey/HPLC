@@ -1,0 +1,10 @@
+<div class="raw-upload-target"></div>
+<script type="application/javascript">
+    (function($) {
+        var context = <%=webpartContext%>;
+        var id = LABKEY.Utils.generateUUID();
+
+        $('#' + context.wrapperDivId + ' .raw-upload-target').attr('id', id);
+        LABKEY.HPLC.initializeUpload(id);
+    })(jQuery);
+</script>

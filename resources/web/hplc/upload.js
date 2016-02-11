@@ -1,8 +1,41 @@
 /**
  * Created by iansigmon on 1/20/16.
  */
-(function() {
-    Ext4.QuickTips.init();
+Ext4.ns('LABKEY.HPLC');
+
+LABKEY.HPLC.initializeUpload = function(elementId) {
+
+    var assay;
+    var assayType = 'Raw HPLC';
+
+    var loadAssay = function(cb, scope) {
+        if (LABKEY.page && LABKEY.page.assay) {
+            assay = LABKEY.page.assay;
+            cb.call(scope || this);
+        }
+        else {
+            LABKEY.Assay.getByType({
+                type: assayType,
+                success: function(definitions) {
+                    if (definitions.length == 0) {
+                        var link = LABKEY.Utils.textLink({
+                            text: 'New assay design',
+                            href: LABKEY.ActionURL.buildURL('assay', 'chooseAssayType')
+                        });
+                        Ext4.get(elementId).update('To get started, create a "' + assayType + '" assay. ' + link);
+                    }
+                    else if (definitions.length == 1) {
+                        assay = definitions[0];
+                        cb.call(scope || this);
+                    }
+                    else {
+                        // In the future could present a dropdown allowing the user to switch between active assay design
+                        Ext4.get(elementId).update('This webpart does not currently support multiple "' + assayType + '" assays in the same folder.');
+                    }
+                }
+            })
+        }
+    };
 
     var setWorkingDirectory = function() {
         var dir = 'TEMP_HPLC_' + getRunFolderName();
@@ -50,6 +83,7 @@
 
     var dropzone; var form;
     var init = function() {
+        Ext4.QuickTips.init();
 
         var getAssayForm = function() {
             return {
@@ -181,7 +215,7 @@
         };
 
         form = Ext4.create('Ext.form.Panel', {
-            renderTo: 'upload-run-form',
+            renderTo: elementId,
             tempFolder: getTempFolderName(),
             layout: 'border',
             height: 300,
@@ -241,8 +275,6 @@
 
     var getAssayFormFields = function() {
 
-        var assay = LABKEY.page.assay;
-
         var batchFields = assay.domains[assay.name + ' Batch Fields'];
         var runFields = assay.domains[assay.name + ' Run Fields'];
 
@@ -299,7 +331,6 @@
     };
 
     function saveRun(run) {
-        var assay = LABKEY.page.assay;
 
         LABKEY.Experiment.saveBatch({
             assayId: assay.id,
@@ -315,7 +346,7 @@
             success: function(batch) {
                 clearCachedReports(function(){
                     uploadLog.workingDirectory = setWorkingDirectory();
-                    window.location = LABKEY.ActionURL.buildURL("assay", "assayBegin", LABKEY.ActionURL.getContainer(), LABKEY.ActionURL.getParameters());
+                    window.location = LABKEY.ActionURL.buildURL('assay', 'assayBegin', undefined, {rowId: assay.id});
                 },this);
             }
         }, this);
@@ -348,5 +379,7 @@
         saveRun(run);
     };
 
-    Ext4.onReady(init);
-})();
+    loadAssay(function() {
+        Ext4.onReady(init);
+    });
+};
