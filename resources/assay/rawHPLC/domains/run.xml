@@ -11,15 +11,4 @@
         <exp:RangeURI>http://www.w3.org/2001/XMLSchema#string</exp:RangeURI>
         <exp:Label>Machine Name</exp:Label>
     </exp:PropertyDescriptor>
-    <exp:PropertyDescriptor>
-        <exp:Name>Published</exp:Name>
-        <exp:Required>false</exp:Required>
-        <exp:RangeURI>http://www.w3.org/2001/XMLSchema#boolean</exp:RangeURI>
-        <exp:Label>Published</exp:Label>
-    </exp:PropertyDescriptor>
-    <exp:PropertyDescriptor>
-        <exp:Name>Method</exp:Name>
-        <exp:Required>false</exp:Required>
-        <exp:RangeURI>http://cpas.fhcrc.org/exp/xml#fileLink</exp:RangeURI>
-    </exp:PropertyDescriptor>
 </ap:domain>
