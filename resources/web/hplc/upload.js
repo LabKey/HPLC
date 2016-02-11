@@ -60,7 +60,6 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
 
     var uploadLog = Ext4.create('LABKEY.hplc.UploadLog', {
         region: 'center',
-        id:'uploadLog-dropzone',
         workingDirectory: getTempFolderName(),
         flex: 2,
         listeners: {
@@ -94,57 +93,70 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
     var init = function() {
         Ext4.QuickTips.init();
 
+        var _assayForm;
         var getAssayForm = function() {
-            return {
-                xtype:'form',
-                region: 'west',
-                title:'Run Fields',
-                id: 'hplc-run-form',
-                border: false,
-                layout: 'vbox',
-                shrinkWrap: true,
-                shrinkWrapDock: true,
-                buttonAlign: 'center',
-                collapsible: false,
-                width: '25%',
-                minWidth: 300,
-                minHeight: 300,
-                flex: 1,
-                items: getAssayFormFields(),
-                buttons: [
-                    {
-                        //Add a reset button
-                        xtype:'button',
-                        text: 'Clear Run',
-                        cls: 'labkey-button',
-                        id: 'clearBtn',
-                        handler: function () {
-                            clearCachedReports(function () {
-                                uploadLog.workingDirectory = setWorkingDirectory();
-                                //Recreate working dir
-                                uploadLog.checkOrCreateWorkingFolder(uploadLog.getWorkingPath(), uploadLog);
-                            }, this);
-                        }
-                    }, {
-                        //Add a Save button
-                        xtype:'button',
-                        text: 'Save Run',
-                        cls: 'labkey-button',
-                        id: 'saveBtn',
-                        formBind:true,
-                        handler: function () {
-                            var form = this.up('form').getForm();
 
-                            if (uploadLog.getStore().getCount() == 0) {
-                                showNoFilesError();
+            if (!_assayForm) {
+                _assayForm = Ext4.create('Ext.form.Panel', {
+                    region: 'west',
+                    title: 'Run Fields',
+                    cls: 'hplc-run-form',
+                    border: false,
+                    layout: 'vbox',
+                    shrinkWrap: true,
+                    shrinkWrapDock: true,
+                    buttonAlign: 'center',
+                    collapsible: false,
+                    width: '25%',
+                    minWidth: 300,
+                    minHeight: 300,
+                    flex: 1,
+                    items: getAssayFormFields(),
+                    buttons: [
+                        {
+                            //Add a reset button
+                            xtype: 'button',
+                            text: 'Clear Run',
+                            cls: 'labkey-button',
+                            handler: function () {
+                                Ext4.Msg.show({
+                                    title: 'Clear Run',
+                                    msg: 'Are you sure you want to clear these results?',
+                                    icon: Ext4.window.MessageBox.INFO,
+                                    buttons: Ext4.Msg.YESNO,
+                                    fn: function(btn) {
+                                        if (btn == 'yes') {
+                                            clearCachedReports(function() {
+                                                uploadLog.workingDirectory = setWorkingDirectory();
+                                                //Recreate working dir
+                                                uploadLog.checkOrCreateWorkingFolder(uploadLog.getWorkingPath(), uploadLog);
+                                            }, this);
+                                        }
+                                    }
+                                });
                             }
-                            else if (form.isValid()) {
-                                closeRun(form);
+                        }, {
+                            //Add a Save button
+                            xtype: 'button',
+                            text: 'Save Run',
+                            cls: 'labkey-button',
+                            formBind: true,
+                            handler: function () {
+                                var form = this.up('form').getForm();
+
+                                if (uploadLog.getStore().getCount() == 0) {
+                                    showNoFilesError();
+                                }
+                                else if (form.isValid()) {
+                                    closeRun(form);
+                                }
                             }
                         }
-                    }
-                ]
-            };
+                    ]
+                });
+            }
+
+            return _assayForm;
         };
 
         var dropInit = function(){
