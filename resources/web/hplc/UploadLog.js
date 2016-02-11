@@ -7,6 +7,7 @@
 Ext4.define('LABKEY.hplc.UploadLog', {
 
     extend: 'Ext.panel.Panel',
+
     modelClass:'LABKEY.hplc.model.Uploads',
 
     initComponent : function() {
@@ -52,19 +53,17 @@ Ext4.define('LABKEY.hplc.UploadLog', {
 
         this.items = [ this.getGrid() ];
 
+        this.callParent();
+
         this.resolvePipeline(function(context){
             this.fileSystem = Ext4.create('File.system.Webdav', {
                 rootPath: context['webDavURL'],
-                rootOffset:'HPLCassayData',
+                rootOffset: 'HPLCAssayData',
                 rootName: 'fileset'
             });
 
-            window.fileSystem = this.fileSystem;
-
             this.createWorkingFolder();
         }, this);
-
-        this.callParent();
     },
 
     getGrid : function() {
@@ -73,7 +72,8 @@ Ext4.define('LABKEY.hplc.UploadLog', {
                 height: 300,
                 store: this.getStore(),
                 columns: this.getColumns(),
-                invalidateScrollerOnRefresh:false
+                invalidateScrollerOnRefresh: false,
+                flex: 1
             });
         }
 
@@ -85,7 +85,7 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             {
                 xtype: 'templatecolumn',
                 text: 'File Name',
-                width: 250,
+                flex: 1,
                 tpl: [
                     '<tpl if="uploadFileURL !== undefined && uploadFileURL.length &gt; 0">',
                     '<a href="{uploadFileURL}">{fileName:htmlEncode}</a>',
@@ -101,7 +101,7 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             }
             , {
                 text: 'Upload Progress',
-                width: 130,
+                width: 150,
                 dataIndex: 'progress',
                 sortable: true,
                 renderer: function (v, m, r) {

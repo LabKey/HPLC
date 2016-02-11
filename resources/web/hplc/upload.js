@@ -19,7 +19,7 @@
     var getRunFolderName = function() {
         var now = new Date();
         var parts = [now.getFullYear(), now.getMonth() + 1 /*javascript uses 0 based month*/,
-                now.getDate(), now.getHours(),now.getMinutes(),now.getSeconds()]
+                now.getDate(), now.getHours(),now.getMinutes(),now.getSeconds()];
 
         return parts.join('_');
     };
@@ -54,14 +54,20 @@
         var getAssayForm = function() {
             return {
                 xtype:'form',
+                region: 'west',
                 title:'Run Fields',
                 id: 'hplc-run-form',
-                items: getAssayFormFields(),
                 border: false,
-                layout:'vbox',
-                shrinkWrap:true,
-                shrinkWrapDock:true,
-                buttonAlign:'center',
+                layout: 'vbox',
+                shrinkWrap: true,
+                shrinkWrapDock: true,
+                buttonAlign: 'center',
+                collapsible: false,
+                width: '25%',
+                minWidth: 300,
+                minHeight: 300,
+                flex: 1,
+                items: getAssayFormFields(),
                 buttons: [
                     {
                         //Add a reset button
@@ -86,8 +92,7 @@
                         handler: function () {
                             var form = this.up('form').getForm();
 
-                            if(uploadLog.getStore().getCount() == 0)
-                            {
+                            if (uploadLog.getStore().getCount() == 0) {
                                 showNoFilesError();
                             }
                             else if (form.isValid()) {
@@ -95,14 +100,7 @@
                             }
                         }
                     }
-                ],
-
-                collapsible: false,
-                region: 'west',
-                width:'25%',
-                minWidth: 280,
-                minHeight:300,
-                flex: 1
+                ]
             };
         };
 
@@ -139,16 +137,14 @@
                     done();
                 },
 
-                init: function(){
+                init: function() {
 
                     this.on('processing', function (file) {
                         var cwd = uploadLog.getFullWorkingPath();
                         if (cwd) {
-                            var uri = uploadLog.fileSystem.concatPaths(cwd, file.name);
-
                             // Folder the file will be POSTed into
-                            var folderUri = uploadLog.fileSystem.getParentPath(uri);
-                            this.options.url = folderUri;
+                            var uri = uploadLog.fileSystem.concatPaths(cwd, file.name);
+                            this.options.url = uploadLog.fileSystem.getParentPath(uri);
                         }
 
                         //Add entry to uploadLog
@@ -160,7 +156,7 @@
                         file.workingId = process.get('id');
                         uploadLog.getStore().sync();
 
-                        //Update inprogress tracker
+                        //Update in-progress tracker
                         processingCounter.value++;
                         form.isValid();
                     });
@@ -171,7 +167,7 @@
                         model.set('progress', progress);
                     });
 
-                    //Update inprogress tracker
+                    //Update in-progress tracker
                     this.on('success', function(file, response, evt) {
                         processingCounter.value--;
                         form.isValid();
@@ -180,7 +176,6 @@
                 show: !(uploadLog.getStore().getCount() > 0)
             });
 
-            this.dropzone = dropzone;
             dropzone.uploadPanel = uploadLog;
             dropzone.form = form;
         };
@@ -189,7 +184,8 @@
             renderTo: 'upload-run-form',
             tempFolder: getTempFolderName(),
             layout: 'border',
-            height:300,
+            height: 300,
+            minHeight: 300,
             border: false,
             bodyStyle: 'background-color: transparent;',
             items: [
@@ -206,26 +202,11 @@
                     uploadLog.getStore().add(process);
                     uploadLog.getStore().sync();
                 },
-                actionfailed: function (_form, action, eOpts) { alert("Server Failed"); },
-
-                //TODO: Resize
-                //afterrender: function() {
-                //    Ext4.defer(function () {
-                //        var size = Ext4.getBody().getBox();
-                //        this.resize.call(this, size.width, size.height);
-                //    }, 300, this);
-                //}
+                actionfailed: function (_form, action, eOpts) {
+                    LABKEY.Utils.alert('Server Failed', 'Failed to create run.');
+                }
             }
-
-            //TODO: Resize
-            //resize : function(w,h) {
-            //        LABKEY.ext4.Util.resizeToViewport(this, w, h, 46, 32);
-            //}
         });
-
-
-        //TODO: Resize
-        //Ext4.EventManager.onWindowResize(form.resize, form);
 
         window.onbeforeunload = function(){
             if(form.isDirty() || uploadLog.getStore().getCount() > 0) {
@@ -238,7 +219,15 @@
             sessionStorage.hplcWorkingDirectyory = undefined;
         };
 
-        var drop = dropInit();
+        dropInit();
+
+        Ext4.EventManager.onWindowResize(function(w, h) {
+            LABKEY.ext4.Util.resizeToViewport(this, w, this.getHeight(), 20, 35);
+            if (dropzone) {
+                LABKEY.internal.FileDrop.hideDropzones();
+                LABKEY.internal.FileDrop.showDropzones();
+            }
+        }, form);
     };
 
     var processingCounter = Ext4.create('Ext.form.field.Hidden', {
@@ -264,8 +253,8 @@
         return configs;
     };
 
-    var showNoFilesError = function(){
-        alert('Please add run result file(s)');
+    var showNoFilesError = function() {
+        LABKEY.Utils.alert('No Files', 'Please add run result file(s)');
     };
 
     var getConfigs = function(fields) {
@@ -273,26 +262,27 @@
             return [];
 
         var configs = [];
-        fields.forEach(function(metaField){
+        Ext4.each(fields, function(metaField) {
             configs.push(getExtConfig(metaField));
-        },this);
+        });
 
         return configs;
     };
 
     var getExtConfig = function(meta) {
         setLookupConfig(meta);
-        var config = LABKEY.ext4.Util.getFormEditorConfig(meta
-        );
-        config.id = config.name;
+        var config = LABKEY.ext4.Util.getFormEditorConfig(meta);
 
-        return config;
+        return Ext4.apply(config, {
+            id: config.name,
+            validateOnBlur: false
+        });
     };
 
     var setLookupConfig = function(meta) {
         // the getDefaultEditorConfig code in util.js expects a lookup object, so create one here
         // if our metadata has lookup information
-        if (meta.lookupQuery && meta.lookupSchema && !meta.lookup)    {
+        if (meta.lookupQuery && meta.lookupSchema && !meta.lookup) {
             meta.lookup = {
                 container : meta.lookupContainer,
                 schemaName : meta.lookupSchema,
@@ -316,10 +306,10 @@
             batch: {
                 batchProtocolId: assay.id,
                 runs: [{
-                    "name": run.name,
-                    "properties": run.properties,
-                    "dataRows": run.dataRows,
-                    "dataInputs": run.dataInputs
+                    name: run.name,
+                    properties: run.properties,
+                    dataRows: run.dataRows,
+                    dataInputs: run.dataInputs
                 }]
             },
             success: function(batch) {
@@ -331,17 +321,12 @@
         }, this);
     }
 
-    var generateAndSaveRun = function(files, fieldValues){
-
-        var run = new LABKEY.Exp.Run({
-            name: getRunFolderName(),
-            properties: fieldValues
-        });
+    var generateAndSaveRun = function(files, fieldValues) {
 
         var dataRows = [];
         var dataInputs = [];
 
-        files.forEach(function(resultFile) {
+        Ext4.each(files, function(resultFile) {
             dataRows.push({
                 Name: resultFile.text,
                 DataFile: resultFile.text,
@@ -353,8 +338,13 @@
             });
         });
 
-        run.dataRows = dataRows;
-        run.dataInputs = dataInputs;
+        var run = new LABKEY.Exp.Run({
+            name: getRunFolderName(),
+            properties: fieldValues,
+            dataRows: dataRows,
+            dataInputs: dataInputs
+        });
+
         saveRun(run);
     };
 
