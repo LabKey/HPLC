@@ -1,7 +1,7 @@
 <libraries xmlns="http://labkey.org/clientLibrary/xml/">
     <library compileInProductionMode="false">
         <script path="hplc/hplc.css"/>
-        <script path="hplc/uploadLog.js"/>
+        <script path="hplc/UploadLog.js"/>
         <script path="hplc/upload.js"/>
     </library>
     <dependencies>

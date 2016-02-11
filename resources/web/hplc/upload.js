@@ -7,6 +7,7 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
 
     var assay;
     var assayType = 'Raw HPLC';
+    var hideOverlay = false;
 
     var loadAssay = function(cb, scope) {
         if (LABKEY.page && LABKEY.page.assay) {
@@ -61,7 +62,15 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
         region: 'center',
         id:'uploadLog-dropzone',
         workingDirectory: getTempFolderName(),
-        flex:2
+        flex: 2,
+        listeners: {
+            removefile: function(name, count) {
+                if (count == 0) {
+                    hideOverlay = false;
+                    LABKEY.internal.FileDrop.showDropzones();
+                }
+            }
+        }
     });
 
     var clearCachedReports = function(callback, scope) {
@@ -145,6 +154,7 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
                 maxFiles: 5000,
                 // Allow uploads of 100GB files
                 maxFilesize: 100*(1024*1024),
+                previewsContainer: false,
 
                 peer: function() {
                     // Get the grid component from the outer Browser component
@@ -167,6 +177,7 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
 
                     //Hide dropzone overlay
                     LABKEY.internal.FileDrop.hideDropzones();
+                    hideOverlay = true;
 
                     done();
                 },
@@ -257,7 +268,7 @@ LABKEY.HPLC.initializeUpload = function(elementId) {
 
         Ext4.EventManager.onWindowResize(function(w, h) {
             LABKEY.ext4.Util.resizeToViewport(this, w, this.getHeight(), 20, 35);
-            if (dropzone) {
+            if (!hideOverlay && dropzone) {
                 LABKEY.internal.FileDrop.hideDropzones();
                 LABKEY.internal.FileDrop.showDropzones();
             }

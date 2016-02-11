@@ -10,6 +10,13 @@ Ext4.define('LABKEY.hplc.UploadLog', {
 
     modelClass:'LABKEY.hplc.model.Uploads',
 
+    constructor : function(config) {
+
+        this.callParent([config]);
+
+        this.addEvents('removefile');
+    },
+
     initComponent : function() {
 
         if (!Ext4.ModelManager.isRegistered(this.modelClass)) {
@@ -127,13 +134,18 @@ Ext4.define('LABKEY.hplc.UploadLog', {
                     handler: function(grid, rowIndex, colIndex) {
                         var store = grid.getStore();
                         var row = store.getAt(rowIndex);
+                        var fileName = row.get('fileName');
+                        var me = this;
+
                         //Delete File
                         this.fileSystem.deletePath({
-                            path: this.fileSystem.concatPaths(this.getFullWorkingPath(), row.get('fileName')),
+                            path: this.fileSystem.concatPaths(this.getFullWorkingPath(), fileName),
                             isFile: true,
-                            success: function(){
+                            success: function() {
                                 //remove from grid
                                 store.removeAt(rowIndex);
+                                store.sync();
+                                me.fireEvent('removefile', fileName, store.getCount());
                             }
                         });
                     },
