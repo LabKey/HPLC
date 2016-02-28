@@ -40,7 +40,7 @@ public class HPLCModule extends DefaultModule
     @Override
     public double getVersion()
     {
-        return 15.21;
+        return 16.10;
     }
 
     @Override
