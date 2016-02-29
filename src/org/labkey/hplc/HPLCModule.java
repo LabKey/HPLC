@@ -65,8 +65,6 @@ public class HPLCModule extends DefaultModule
     @Override
     public void doStartup(ModuleContext moduleContext)
     {
-        // add a container listener so we'll know when our container is deleted:
-        ContainerManager.addContainerListener(new HPLCContainerListener());
     }
 
     @Override
@@ -74,12 +72,5 @@ public class HPLCModule extends DefaultModule
     public Collection<String> getSummary(Container c)
     {
         return Collections.emptyList();
-    }
-
-    @Override
-    @NotNull
-    public Set<String> getSchemaNames()
-    {
-        return Collections.singleton(HPLCSchema.NAME);
     }
 }

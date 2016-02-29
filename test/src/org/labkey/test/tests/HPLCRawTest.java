@@ -40,7 +40,6 @@ public class HPLCRawTest extends BaseWebDriverTest
     private static final String PROJECT_NAME = "HPLCRawTest";
     private static final String SAMPLE_DATA_LOC = "rawHPLC/HPLCassayData/TestRun001";
     private static final String SAVE_BUTTON = "Save Run";
-    private static final String CLEAR_BUTTON = "Clear Run";
 
     @Nullable
     @Override
@@ -157,17 +156,17 @@ public class HPLCRawTest extends BaseWebDriverTest
         uploadPage.waitForPageLoad();
         runName = "importTest2";
         uploadPage.setRunIDField(runName);
-        for(File dataFile : files)
+        for (File dataFile : files)
             uploadPage.uploadFile(dataFile);
         assertElementPresent(Ext4Helper.Locators.getGridRow()); //Check grid has elements
 
         //clear run
-        clickButton(CLEAR_BUTTON, 0);
-        uploadPage.assertPageClear();
+        uploadPage.clearRun();
         goToProjectHome();  //Should not cause unload warning
     }
 
-    private void navigateToAssayLandingPage(){
+    private void navigateToAssayLandingPage()
+    {
         //Navigate to Landing Page
         goToProjectHome();
         clickAndWait(Locator.linkWithText(HPLCInitializer.RAW_HPLC_ASSAY));
@@ -181,10 +180,5 @@ public class HPLCRawTest extends BaseWebDriverTest
         clickButton("Import Data");
         HPLCUploadPage page = new HPLCUploadPage(this);
         page.waitForPageLoad();
-    }
-
-    private String getUploadPageRelativeURL()
-    {
-        return this.getCurrentRelativeURL().replace("assayBegin","moduleAssayUpload");
     }
 }

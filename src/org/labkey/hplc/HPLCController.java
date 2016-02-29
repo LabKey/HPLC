@@ -64,20 +64,6 @@ public class HPLCController extends SpringActionController
         setActionResolver(_actionResolver);
     }
 
-    @RequiresPermission(ReadPermission.class)
-    public class BeginAction extends SimpleViewAction
-    {
-        public ModelAndView getView(Object o, BindException errors) throws Exception
-        {
-            return new JspView("/org/labkey/hplc/view/hello.jsp");
-        }
-
-        public NavTree appendNavTrail(NavTree root)
-        {
-            return root;
-        }
-    }
-
 
     /**
      * Meant to mimic PipelineController.getPipelineContainerAction but with the incorporated HPLC path context
@@ -219,9 +205,7 @@ public class HPLCController extends SpringActionController
                 }
             }
 
-            ApiSimpleResponse resp = new ApiSimpleResponse(props);
-
-            return resp;
+            return new ApiSimpleResponse(props);
         }
     }
 }

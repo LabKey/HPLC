@@ -11,6 +11,8 @@ import java.io.File;
  */
 public class HPLCUploadPage
 {
+    private static final String CLEAR_BUTTON = "Clear Run";
+
     protected BaseWebDriverTest _test;
 
     public HPLCUploadPage(BaseWebDriverTest test)
@@ -41,9 +43,11 @@ public class HPLCUploadPage
         _test.waitForElement(HPLCUploadPage.Locators.fileInput, 1000);
     }
 
-    public void assertPageClear()
+    public void clearRun()
     {
-        _test.assertElementNotPresent(Ext4Helper.Locators.getGridRow()); //Check grid is cleared
+        _test.clickButton(CLEAR_BUTTON, 0);
+        _test._ext4Helper.clickWindowButton("Clear Run", "Yes", 0, 0);
+        _test.waitForElementToDisappear(Ext4Helper.Locators.getGridRow()); //Check grid is cleared
         _test.assertFormElementEquals(HPLCUploadPage.Locators.runIdentifier, ""); //check form is cleared
     }
 

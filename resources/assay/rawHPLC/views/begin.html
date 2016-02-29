@@ -30,7 +30,7 @@
                 var filter = LABKEY.Filter.create('WRAPPEDROWID/Search', value, LABKEY.Filter.Types.CONTAINS);
 
                 if (value) {
-                    qwp.getDataRegion().addFilter(filter);
+                    qwp.getDataRegion().replaceFilter(filter, filter);
                 }
                 else {
                     qwp.getDataRegion().removeFilter(filter);
