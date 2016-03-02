@@ -72,3 +72,6 @@ To view chromatograms for HPLC results, follow these instructions:
 1. Select the data run(s) you wish to view from the left.
 1. Click the `Overlay Selected` button.
 
+## Installing the HPLC Module ##
+
+[Contact us](https://www.labkey.com/company/contact-us) for details on installing the HPLC module.
