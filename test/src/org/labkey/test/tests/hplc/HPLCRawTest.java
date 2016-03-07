@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.labkey.test.tests;
+package org.labkey.test.tests.hplc;
 
 import org.jetbrains.annotations.Nullable;
 import org.junit.BeforeClass;
@@ -23,11 +23,11 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.categories.HPLC;
-import org.labkey.test.pages.HPLCAssayBeginPage;
-import org.labkey.test.pages.HPLCUploadPage;
+import org.labkey.test.pages.hplc.HPLCAssayBeginPage;
+import org.labkey.test.pages.hplc.HPLCUploadPage;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
-import org.labkey.test.util.HPLCInitializer;
+import org.labkey.test.util.hplc.HPLCInitializer;
 import org.junit.Assert;
 
 import java.io.File;

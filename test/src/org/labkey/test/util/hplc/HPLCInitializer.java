@@ -1,9 +1,10 @@
-package org.labkey.test.util;
+package org.labkey.test.util.hplc;
 
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.WebDriverWrapper;
+import org.labkey.test.util.LogMethod;
 
 /**
  * Created by Nick Arnold on 1/5/2016.
