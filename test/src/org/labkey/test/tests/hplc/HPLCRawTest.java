@@ -22,7 +22,6 @@ import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
-import org.labkey.test.categories.HPLC;
 import org.labkey.test.pages.hplc.HPLCAssayBeginPage;
 import org.labkey.test.pages.hplc.HPLCUploadPage;
 import org.labkey.test.util.DataRegionTable;
@@ -34,7 +33,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-@Category({HPLC.class})
+@Category({})
 public class HPLCRawTest extends BaseWebDriverTest
 {
     private static final String PROJECT_NAME = "HPLCRawTest";
