@@ -6,7 +6,7 @@
         <antcall target="gather_modules" />
         <ant antfile="${basedir}/build.xml" target="package_redistributables">
             <property name="dist_sub.dir" value="HPLC" />
-            <property name="skip.zipDistribution" value="true" />
+            <property name="skip.zipDistribution" value="false" />
             <property name="extraFileIdentifier" value="-HPLC" />
         </ant>
     </target>
