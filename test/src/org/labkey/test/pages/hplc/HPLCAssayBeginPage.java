@@ -1,4 +1,4 @@
-package org.labkey.test.pages;
+package org.labkey.test.pages.hplc;
 
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
