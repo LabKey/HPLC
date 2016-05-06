@@ -170,7 +170,7 @@ public class HPLCController extends SpringActionController
                     {
                         File canonicalFile = FileUtil.getAbsoluteCaseSensitiveFile(resource.getFile());
                         String url = canonicalFile.toURI().toURL().toString();
-                        Map<String, Object> keys = Collections.singletonMap(ExpDataTable.Column.DataFileUrl.name(), (Object) url);
+                        Map<String, Object> keys = Collections.singletonMap(ExpDataTable.Column.DataFileUrl.name(), url);
                         List<Map<String, Object>> rows = qus.getRows(getUser(), c, Collections.singletonList(keys));
 
                         if (rows.size() == 1)
