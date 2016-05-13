@@ -15,7 +15,7 @@
 #
 
 # Author:  Nick Arnold
-# Company: LabKey Software
+# Company: LabKey
 # Date:    1.15.2013
 # File:    HPLCWatch.py
 # Purpose: This script is intended for use in watching and uploading HPLC files in the LabKey HPLC assay.
