@@ -18,16 +18,14 @@ package org.labkey.hplc;
 
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.ContainerManager;
-import org.labkey.api.module.DefaultModule;
+import org.labkey.api.module.CodeOnlyModule;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.view.WebPartFactory;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
-public class HPLCModule extends DefaultModule
+public class HPLCModule extends CodeOnlyModule
 {
     public static final String NAME = "HPLC";
 
@@ -35,18 +33,6 @@ public class HPLCModule extends DefaultModule
     public String getName()
     {
         return NAME;
-    }
-
-    @Override
-    public double getVersion()
-    {
-        return 16.10;
-    }
-
-    @Override
-    public boolean hasScripts()
-    {
-        return false;
     }
 
     @Override
