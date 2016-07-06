@@ -1,5 +1,7 @@
 # HPLC
 
+####This module is is under active development and may migrate to a new and more generalized module in the near future.####
+
 ### Basic Setup: ###
 
 1. Create a LabKey Assay Project/Folder
