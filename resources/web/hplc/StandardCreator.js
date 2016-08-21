@@ -710,13 +710,13 @@ Ext4.define('LABKEY.hplc.StandardCreator', {
     renderCalibrationStandards : function(definitions) {
 
         this.definitions = definitions;
-        var expected = definitions.length, recieved = 0;
+        var expected = definitions.length, received = 0;
         var contentMap = {};
 
         var done = function(content) {
-            recieved++;
+            received++;
             contentMap[content.fileName] = content;
-            if (recieved == expected) {
+            if (received == expected) {
                 //
                 // render the plot
                 //
@@ -815,7 +815,7 @@ Ext4.define('LABKEY.hplc.StandardCreator', {
         this.curveConfig = {
             contentMap: {},
             expected: store.getCount(),
-            recieved: 0
+            received: 0
         };
 
         for (var d=0; d < store.getCount(); d++) {
@@ -848,10 +848,10 @@ Ext4.define('LABKEY.hplc.StandardCreator', {
     _processContent : function(content) {
 
         if (Ext4.isObject(this.curveConfig)) {
-            this.curveConfig.recieved++;
+            this.curveConfig.received++;
             this.curveConfig.contentMap[content.fileName] = content;
 
-            if (this.curveConfig.expected === this.curveConfig.recieved) {
+            if (this.curveConfig.expected === this.curveConfig.received) {
 
                 //
                 // have content
