@@ -146,7 +146,7 @@ public class HPLCRawTest extends BaseWebDriverTest
 
         //Check if deleted file was added as result
         beginPage.setSearchBox(testFile.getName()); //Filter results to deleted filename
-        assertElementNotPresent(Ext4Helper.Locators.getGridRow(runName, 0)); //Look for added run
+        assertElementNotPresent(Ext4Helper.Locators.getGridRow(runName)); //Look for added run
         beginPage.clearSearchBox();
 
         ///////////  Check clearing run  ///////////
