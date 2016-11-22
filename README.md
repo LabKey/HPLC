@@ -1,6 +1,6 @@
 # HPLC
 
-####This module is deprecated and is not under active development. Active development has been migrated to the (Signal Data module)[https://github.com/LabKey/signalData/blob/develop/README.md].####
+####This module is deprecated and is not under active development. Active development has been migrated to the [Signal Data module](https://github.com/LabKey/signalData/blob/develop/README.md).####
 
 ### Basic Setup: ###
 
