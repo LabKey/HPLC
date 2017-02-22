@@ -1,0 +1,24 @@
+import org.labkey.gradle.plugin.Distribution
+import org.labkey.gradle.task.ModuleDistribution
+import org.labkey.gradle.util.BuildUtils
+import org.labkey.gradle.util.GroupNames
+
+apply plugin: 'org.labkey.distribution'
+
+Distribution.inheritDependencies(project, ":server:distributions:legacy")
+
+BuildUtils.addModuleDistributionDependencies(project, [":server:optionalModules:HPLC"])
+
+
+project.task(
+        "distribution",
+        group: GroupNames.DISTRIBUTION,
+        type: ModuleDistribution,
+        {ModuleDistribution dist ->
+            dist.subDirName='HPLC'
+            dist.includeWindowsInstaller=true
+            dist.includeZipArchive=true
+            dist.includeTarGZArchive=true
+            dist.extraFileIdentifier='-HPLC'
+        }
+)
