@@ -7,7 +7,7 @@ apply plugin: 'org.labkey.distribution'
 
 Distribution.inheritDependencies(project, ":server:distributions:legacy")
 
-BuildUtils.addModuleDistributionDependencies(project, [":server:optionalModules:HPLC"])
+BuildUtils.addModuleDistributionDependencies(project, [":server:optionalModules:hplc"])
 
 
 project.task(
