@@ -17,7 +17,6 @@ project.task(
         {ModuleDistribution dist ->
             dist.subDirName='HPLC'
             dist.includeWindowsInstaller=true
-            dist.includeZipArchive=true
             dist.includeTarGZArchive=true
             dist.extraFileIdentifier='-HPLC'
         }
