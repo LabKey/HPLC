@@ -18,6 +18,7 @@ project.task(
             dist.subDirName='HPLC'
             dist.includeWindowsInstaller=true
             dist.includeTarGZArchive=true
+            dist.includeZipArchive=false
             dist.extraFileIdentifier='-HPLC'
         }
 )
