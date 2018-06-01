@@ -61,12 +61,12 @@ To manually upload result files, follow these instructions:
 1. Add the **HPLC Upload** webpart.
 1. Drag-and-drop any result files you want to import onto the dropzone.
 
-![Drag-and-drop to upload a run](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc0.png)
+![Drag-and-drop to upload a run](https://github.com/LabKey/docs/blob/master/images/hplc0.png?raw=true)
 
 1. Specify a Run Identifier (required).
 1. Click the **Save Run** button.
 
-![Name and save a run](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc2.png)
+![Name and save a run](https://github.com/LabKey/docs/blob/master/images/hplc2.png?raw=true)
 
 ## View Results ##
 
@@ -77,24 +77,24 @@ To view chromatograms for HPLC results, follow these instructions:
 1. Select the run(s) you want to look at, using the checkboxes.
 1. Click **View Selected Runs**.
 
-![View runs](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc3.png) 
+![View runs](https://github.com/LabKey/docs/blob/master/images/hplc3.png?raw=true) 
 
 1. Select the data run(s) you wish to view from the left.
 1. Click the `Overlay Selected` button.
 
-![View runs](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc4.png) 
+![View runs](https://github.com/LabKey/docs/blob/master/images/hplc4.png?raw=true) 
 
 1. The left selection pane will close, and the overlayed results will be displayed in the center pane.
 
-![View runs](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc5.png) 
+![View runs](https://github.com/LabKey/docs/blob/master/images/hplc5.png?raw=true) 
 
 1. You can zoom into the graph by entering values in the **Time** and **mV Range** text boxes, or by drawing a new area inside the graph using the mouse.
 
-![View runs](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc6.png) 
+![View runs](https://github.com/LabKey/docs/blob/master/images/hplc6.png?raw=true) 
 
 Enter values in the right pane to calucluate areas under the curves. Select in the name column to highlight different graph lines.
 
-![View runs](https://www.labkey.org/wiki/home/Documentation/download.view?entityId=303de39a-f9df-1033-93d6-a3afb15978a8&name=hplc7.png) 
+![View runs](https://github.com/LabKey/docs/blob/master/images/hplc7.png?raw=true) 
 
 ## Installing the HPLC Module ##
 
