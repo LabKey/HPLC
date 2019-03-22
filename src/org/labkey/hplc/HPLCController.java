@@ -16,10 +16,10 @@
 
 package org.labkey.hplc;
 
-import org.labkey.api.action.ApiAction;
 import org.labkey.api.action.ApiResponse;
 import org.labkey.api.action.ApiSimpleResponse;
-import org.labkey.api.action.SimpleViewAction;
+import org.labkey.api.action.MutatingApiAction;
+import org.labkey.api.action.ReadOnlyApiAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
@@ -38,13 +38,10 @@ import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.services.ServiceRegistry;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.UnexpectedException;
-import org.labkey.api.view.JspView;
-import org.labkey.api.view.NavTree;
 import org.labkey.api.webdav.WebdavResource;
 import org.labkey.api.webdav.WebdavService;
 import org.labkey.hplc.assay.HPLCAssayDataHandler;
 import org.springframework.validation.BindException;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -69,7 +66,7 @@ public class HPLCController extends SpringActionController
      * Meant to mimic PipelineController.getPipelineContainerAction but with the incorporated HPLC path context
      */
     @RequiresPermission(ReadPermission.class)
-    public class getHPLCPipelineContainerAction extends ApiAction
+    public class getHPLCPipelineContainerAction extends ReadOnlyApiAction
     {
         public ApiResponse execute(Object form, BindException errors) throws Exception
         {
@@ -123,7 +120,7 @@ public class HPLCController extends SpringActionController
 
 
     @RequiresPermission(ReadPermission.class)
-    public class getHPLCResourceAction extends ApiAction<HPLCResourceForm>
+    public class getHPLCResourceAction extends MutatingApiAction<HPLCResourceForm>
     {
         @Override
         public ApiResponse execute(HPLCResourceForm form, BindException errors) throws Exception

@@ -242,7 +242,7 @@ Ext4.define('LABKEY.hplc.UploadLog', {
             files.forEach(function(file) {
                 LABKEY.Ajax.request({
                     url: LABKEY.ActionURL.buildURL('hplc', 'getHPLCResource.api'),
-                    method: 'GET',
+                    method: 'POST',
                     params: { path: file.id, test: true },
                     success: function(response) {
                         done(file, Ext4.decode(response.responseText));
