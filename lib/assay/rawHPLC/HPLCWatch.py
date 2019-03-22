@@ -171,7 +171,10 @@ class HPLCHandler(PatternMatchingEventHandler):
         url = self.buildActionURL('hplc', 'getHPLCResource')
         url += '?path=' + davPath
 
-        r = session.get(url, auth=(user, password))
+        #
+        # Changed to POST in 19.2... NOT TESTED, PROBABLY NEEDS A CSRF TOKEN!
+        #
+        r = session.post(url, auth=(user, password))
         s = r.status_code
         if s == 200:
             decoded = json.JSONDecoder().decode(r.text)
